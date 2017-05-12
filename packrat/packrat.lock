@@ -1,0 +1,218 @@
+PackratFormat: 1.4
+PackratVersion: 0.4.8.1
+RVersion: 3.4.0
+Repos: CRAN=https://cran.rstudio.com/,
+    CRANextra=http://www.stats.ox.ac.uk/pub/RWin
+
+Package: BH
+Source: CRAN
+Version: 1.62.0-1
+
+Package: DBI
+Source: CRAN
+Version: 0.6-1
+Hash: 4aef5bda70897c1663d5b8bae2f4419a
+
+Package: R6
+Source: CRAN
+Version: 2.2.1
+Hash: 530f0b839551f96ec991ce4f93156ee1
+
+Package: RColorBrewer
+Source: CRAN
+Version: 1.1-2
+
+Package: Rcpp
+Source: CRAN
+Version: 0.12.10
+Hash: 6cf65d0dd6a92f2d43c8d4805d33efe9
+
+Package: assertthat
+Source: CRAN
+Version: 0.2.0
+Hash: e8805df54c65ac96d50235c44a82615c
+
+Package: base64enc
+Source: CRAN
+Version: 0.1-3
+
+Package: colorspace
+Source: CRAN
+Version: 1.3-2
+Hash: 0bf8618b585fa98eb23414cd3ab95118
+
+Package: crosstalk
+Source: CRAN
+Version: 1.0.0
+Requires: R6, ggplot2, htmltools, jsonlite, lazyeval, shiny
+
+Package: curl
+Source: CRAN
+Version: 2.6
+Hash: 8162b82ca4809c0d63c30aedbd7348e0
+
+Package: dichromat
+Source: CRAN
+Version: 2.0-0
+Hash: 08eed0c80510af29bb15f840ccfe37ce
+
+Package: digest
+Source: CRAN
+Version: 0.6.12
+Hash: e53fb8c58673df868183697e39a6a4d6
+
+Package: dplyr
+Source: CRAN
+Version: 0.5.0
+Requires: BH, DBI, R6, Rcpp, assertthat, lazyeval, magrittr, tibble
+
+Package: ggplot2
+Source: CRAN
+Version: 2.2.1
+Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
+
+Package: gtable
+Source: CRAN
+Version: 0.2.0
+Hash: cd78381a9d3fea966ac39bd0daaf5554
+
+Package: hexbin
+Source: CRAN
+Version: 1.27.1
+
+Package: htmltools
+Source: CRAN
+Version: 0.3.6
+Requires: Rcpp, digest
+Hash: fb62c5ebb577da9b27b9a0b660ba7fc4
+
+Package: htmlwidgets
+Source: CRAN
+Version: 0.8
+Requires: htmltools, jsonlite, yaml
+
+Package: httpuv
+Source: CRAN
+Version: 1.3.3
+Requires: Rcpp
+Hash: 15df1efb155731a0ac9c0bfd84f13499
+
+Package: httr
+Source: CRAN
+Version: 1.2.1
+Requires: R6, curl, jsonlite, mime, openssl
+
+Package: jsonlite
+Source: CRAN
+Version: 1.4
+Hash: 24cc0ffeb1771d710173d9803a131870
+
+Package: labeling
+Source: CRAN
+Version: 0.3
+Hash: ecf589b42cd284b03a4beb9665482d3e
+
+Package: lazyeval
+Source: CRAN
+Version: 0.2.0
+
+Package: magrittr
+Source: CRAN
+Version: 1.5
+
+Package: mime
+Source: CRAN
+Version: 0.5
+Hash: 463550cf44fb6f0a2359368f42eebe62
+
+Package: munsell
+Source: CRAN
+Version: 0.4.3
+Requires: colorspace
+Hash: f96d896947fcaf9b6d0074002e9f4f9d
+
+Package: openssl
+Source: CRAN
+Version: 0.9.6
+Hash: 5f4711e142a44655dfea4d64fcf2f641
+
+Package: packrat
+Source: CRAN
+Version: 0.4.8-1
+Hash: 6ad605ba7b4b476d84be6632393f5765
+
+Package: plotly
+Source: CRAN
+Version: 4.6.0
+Requires: RColorBrewer, base64enc, crosstalk, digest, dplyr, ggplot2,
+    hexbin, htmltools, htmlwidgets, httr, jsonlite, lazyeval, magrittr,
+    purrr, scales, tibble, tidyr, viridisLite
+
+Package: plyr
+Source: CRAN
+Version: 1.8.4
+Requires: Rcpp
+Hash: c9ddbdcfd74ff964e3e7d0b692a8dd70
+
+Package: purrr
+Source: CRAN
+Version: 0.2.2.2
+Requires: Rcpp, lazyeval, magrittr, tibble
+
+Package: reshape2
+Source: CRAN
+Version: 1.4.2
+Requires: Rcpp, plyr, stringr
+Hash: 790c06c11c84041b814139d731a872b9
+
+Package: scales
+Source: CRAN
+Version: 0.4.1
+Requires: RColorBrewer, Rcpp, dichromat, labeling, munsell, plyr
+
+Package: shiny
+Source: CRAN
+Version: 1.0.3
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
+    xtable
+Hash: f133585c72ea31592f663e68c6ff0b3e
+
+Package: sourcetools
+Source: CRAN
+Version: 0.1.6
+Hash: 226d56d7469587da40b0f96180e711b4
+
+Package: stringi
+Source: CRAN
+Version: 1.1.5
+Hash: b6308e49357a0b475f433599e0d8b5eb
+
+Package: stringr
+Source: CRAN
+Version: 1.2.0
+Requires: magrittr, stringi
+Hash: 25a86d7f410513ebb7c0bc6a5e16bdc3
+
+Package: tibble
+Source: CRAN
+Version: 1.3.0
+Requires: Rcpp, lazyeval
+
+Package: tidyr
+Source: CRAN
+Version: 0.6.2
+Requires: Rcpp, dplyr, lazyeval, magrittr, stringi, tibble
+
+Package: viridisLite
+Source: CRAN
+Version: 0.2.0
+
+Package: xtable
+Source: CRAN
+Version: 1.8-2
+Hash: 7293235cfcc14cdff1ce7fd1a0212031
+
+Package: yaml
+Source: CRAN
+Version: 2.1.14
+Hash: c81230c3a7d9ba20607ad6b4331173d1
