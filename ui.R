@@ -1,13 +1,13 @@
 material_page(
-    # tags$head(
-    #     tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
-    # ),
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
+    ),
     title = "My shiny Shiny app, yay",
     
     material_side_nav(
-        fixed = FALSE,
+        fixed = TRUE,
         material_card(
-            title = "Shiny",
+            title = "File Upload",
             depth = 0,
             fileInput(
                 'uploaded_file',
@@ -62,6 +62,8 @@ material_page(
     material_tab_content(
         tab_id = "second_tab",
         tags$br(),
-        tags$h5(" some content")
+        material_card(
+            tags$h5(" some content")
+        )
     )
 )
