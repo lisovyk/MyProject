@@ -4,16 +4,27 @@ function(input, output) {
             need(!is.null(input$uploaded_file), message = FALSE),
             errorClass = "csverr"
         )
-        read.csv(
+        # validate(
+        #     need(is.null(input$uploaded_quote), message = FALSE),
+        #     input$uploaded_quote <= ""
+        # )
+        # observe({
+        #     if(is.null(input$uploaded_quote)) {
+        #         input$upload_quote = ""
+        #         print(input$upload_quote)
+        #     }
+        # })
+        fread(
             input$uploaded_file$datapath,
             header = input$header,
             sep = input$upload_sep,
             quote = input$upload_quote,
+            
             stringsAsFactors = FALSE
         )
     })
     
-    output$contents <- DT::renderDataTable({
+    editable_table <- DT::renderDataTable({
         datatable(
             user_table(),
             selection = list(target = 'column'),
@@ -31,4 +42,5 @@ function(input, output) {
             filter = "top"
         )
     })
+    output$contents <- editable_table
 }

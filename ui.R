@@ -39,7 +39,7 @@ material_page(
                 input_id = "upload_quote",
                 "Quote:",
                 choices = list(
-                    "None" = "",
+                    "None" = " ",
                     "Double Quote" = '"',
                     "Single Quote" = "'"
                 )
