@@ -1,26 +1,36 @@
-sketch = htmltools::withTags(table(
-    class = "captions-enable",
-    caption(
-        style = "text-align: left;
-        margin-top: 36px;
-        margin-left: -44px;
-        position: absolute;
-        text-align: center;
-        transform: rotate(-90deg);
-        -webkit-transform: rotate(-90deg);
-        -moz-transform: rotate(-90deg);
-        -o-transform: rotate(-90deg);
-        -ms-transform: rotate(-90deg);",
-        "vertical"),
-    caption(
-        style = "text-align: left;
-        margin-left: 50px;
-        margin-top: 10px",
-        "horizontal"),
-    div(thead(tr(lapply(as.list(colnames(iris)), tags$th)))
+sketch = htmltools::withTags(
+    div(style = "
+            position: relative;
+            padding-left: 50px;
+            overflow-x: auto;",
+        class = "table-container",
+        div(style = "
+                    text-align: center;",
+            class = "table-horizontal-header", "horizont"),
+        div(style = "
+                position: absolute;
+                right: 0;
+                top: 0;
+                left: 0;
+                width: 50px;
+                bottom: 0;",
+            class = "table-vertical-header", 
+            span(style = "
+                 display: block;
+                 position: absolute;
+                 transform: rotate(-90deg) translateX(50%);
+                 text-align: center;
+                 top: 50%;
+                 height: 50px;",
+                 "vertical")),
+        div(class = "table-wrapper",
+            table(
+                class = "captions-enable",
+                thead(tr(lapply(as.list(colnames(mtcars)), tags$th)))
+            )
+        )
     )
-))
-
-datatable(iris[1:20,], container = sketch, rownames = FALSE)
+)
 
 
+datatable(mtcars[1:20,], container = sketch, rownames = FALSE)

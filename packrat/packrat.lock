@@ -1,6 +1,6 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.8.1
-RVersion: 3.4.0
+RVersion: 3.3.3
 Repos: CRAN=https://cran.rstudio.com/,
     CRANextra=http://www.stats.ox.ac.uk/pub/RWin
 
@@ -61,6 +61,11 @@ Source: CRAN
 Version: 2.6
 Hash: 8162b82ca4809c0d63c30aedbd7348e0
 
+Package: data.table
+Source: CRAN
+Version: 1.10.4
+Hash: 2c7c47ccb40d01c7b214c8eff818108d
+
 Package: dichromat
 Source: CRAN
 Version: 2.0-0
@@ -91,11 +96,12 @@ Hash: cd78381a9d3fea966ac39bd0daaf5554
 Package: hexbin
 Source: CRAN
 Version: 1.27.1
-Hash: 378383b2c37556649fd6b2ee0be7e2a5
+Hash: 9f94c576cc4b9e83fd714ae8387272e6
 
 Package: hms
 Source: CRAN
 Version: 0.3
+Hash: 3fca8a1c97e6cfb297fe3f4690f82c58
 
 Package: htmltools
 Source: CRAN
@@ -185,6 +191,7 @@ Requires: Rcpp, lazyeval, magrittr, tibble
 Package: readr
 Source: CRAN
 Version: 1.1.1
+Hash: 8261195998ee028e8ee5acaa77e1db87
 Requires: BH, R6, Rcpp, hms, tibble
 
 Package: reshape2
