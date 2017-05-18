@@ -4,22 +4,12 @@ function(input, output) {
             need(!is.null(input$uploaded_file), message = FALSE),
             errorClass = "csverr"
         )
-        # validate(
-        #     need(is.null(input$uploaded_quote), message = FALSE),
-        #     input$uploaded_quote <= ""
-        # )
-        # observe({
-        #     if(is.null(input$uploaded_quote)) {
-        #         input$upload_quote = ""
-        #         print(input$upload_quote)
-        #     }
-        # })
+        
         fread(
             input$uploaded_file$datapath,
             header = input$header,
             sep = input$upload_sep,
-            quote = input$upload_quote,
-            
+            quote = ifelse(input$upload_quote == " ", "", input$upload_quote),
             stringsAsFactors = FALSE
         )
     })
