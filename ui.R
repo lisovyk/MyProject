@@ -44,6 +44,12 @@ material_page(
                     "Single Quote" = "'"
                 )
             )
+        ),
+        hr(),
+        # radioButtons("useType", "Use Data Types", c("TRUE", "FALSE")),
+        #     rHandsontableOutput("hot"),
+        uiOutput(
+            "render_button"
         )
     ),
     material_tabs(

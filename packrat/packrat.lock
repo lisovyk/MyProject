@@ -1,6 +1,6 @@
 PackratFormat: 1.4
 PackratVersion: 0.4.8.1
-RVersion: 3.3.3
+RVersion: 3.4.0
 Repos: CRAN=https://cran.rstudio.com/,
     CRANextra=http://www.stats.ox.ac.uk/pub/RWin
 
@@ -96,7 +96,7 @@ Hash: cd78381a9d3fea966ac39bd0daaf5554
 Package: hexbin
 Source: CRAN
 Version: 1.27.1
-Hash: 9f94c576cc4b9e83fd714ae8387272e6
+Hash: 378383b2c37556649fd6b2ee0be7e2a5
 
 Package: hms
 Source: CRAN
@@ -188,17 +188,17 @@ Version: 0.2.2.2
 Hash: faada139260184912fea03f3fea13842
 Requires: Rcpp, lazyeval, magrittr, tibble
 
-Package: readr
-Source: CRAN
-Version: 1.1.1
-Hash: 8261195998ee028e8ee5acaa77e1db87
-Requires: BH, R6, Rcpp, hms, tibble
-
 Package: reshape2
 Source: CRAN
 Version: 1.4.2
 Hash: 790c06c11c84041b814139d731a872b9
 Requires: Rcpp, plyr, stringr
+
+Package: rhandsontable
+Source: CRAN
+Version: 0.3.4
+Hash: 1c4d248a7eac1956b8a5c262cf90383a
+Requires: htmlwidgets, jsonlite, magrittr
 
 Package: scales
 Source: CRAN
