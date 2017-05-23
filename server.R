@@ -32,7 +32,7 @@ function(input, output) {
             filter = "top"
         )
     })
-
+    
     edit_types <- DT::renderDataTable({
         tab <- cbind(lapply(user_table(), typeof))
         colnames(tab) <- "Type"
@@ -51,20 +51,7 @@ function(input, output) {
             ),
             filter = "none"
         )
-        # rhandsontable(tab)
     })
-    # output$hot <- renderRHandsontable({
-    #     if (is.null(input$hot)) {
-    #         DF = data.frame(val = 1:10, bool = TRUE, nm = LETTERS[1:10],
-    #                         dt = seq(from = Sys.Date(), by = "days", length.out = 10),
-    #                         stringsAsFactors = F)
-    #     } else {
-    #         DF = hot_to_r(input$hot)
-    #     }
-    #     rhandsontable(DF, useTypes = as.logical(input$useType)) %>%
-    #         # hot_table(readOnly = TRUE) # ok
-    #         hot_col(col = 1, readOnly = FALSE) 
-    # })
     
     button_render <- renderUI({
         if(!is.null(input$uploaded_file))
@@ -75,6 +62,24 @@ function(input, output) {
                     label = "Convert"
                 )
             )
+    })
+    output$hottest <- renderRHandsontable({
+        if (!is.null(input$uploaded_file)) {
+            if (is.null(input$hottest)) {
+                DF = data.frame(cbind(lapply(user_table(), typeof)),
+                                stringsAsFactors = FALSE)
+            } else {
+                DF = hot_to_r(input$hottest)
+            }
+            
+            title = "Convertion:"
+            rhandsontable(DF, useTypes = as.logical(TRUE)) %>%
+                hot_col(col = 1, readOnly = FALSE) 
+            
+        }
+        else { return() }
+        
+        
     })
     output$render_button <- button_render
     output$datatypes <- edit_types

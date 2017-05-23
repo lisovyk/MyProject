@@ -46,11 +46,7 @@ material_page(
             )
         ),
         hr(),
-        # radioButtons("useType", "Use Data Types", c("TRUE", "FALSE")),
-        #     rHandsontableOutput("hot"),
-        uiOutput(
-            "render_button"
-        )
+        rHandsontableOutput("hottest")
     ),
     material_tabs(
         tabs = c(
