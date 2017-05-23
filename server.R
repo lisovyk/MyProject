@@ -63,18 +63,20 @@ function(input, output) {
                 )
             )
     })
+    dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     output$hottest <- renderRHandsontable({
         if (!is.null(input$uploaded_file)) {
             if (is.null(input$hottest)) {
-                DF = data.frame(cbind(lapply(user_table(), typeof)),
+                DF = data.frame(Type = cbind(lapply(user_table(), typeof)),
                                 stringsAsFactors = FALSE)
             } else {
                 DF = hot_to_r(input$hottest)
             }
-            
-            title = "Convertion:"
-            rhandsontable(DF, useTypes = as.logical(TRUE)) %>%
-                hot_col(col = 1, readOnly = FALSE) 
+            rhandsontable(DF,
+                          readOnly = FALSE) %>%
+                hot_col(col = "Type", type = "dropdown", source = dataTypes, readOnly = FALSE) %>%
+                hot_table(stretchH = 'all', rowHeaderWidth = 120) %>%
+                hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
             
         }
         else { return() }
