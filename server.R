@@ -1,4 +1,4 @@
-function(input, output, session) {
+function(input, output) {
     user_table <- reactive({
         validate(
             need(!is.null(input$uploaded_file), message = FALSE),
@@ -41,44 +41,25 @@ function(input, output, session) {
                     inputId = "button_table_convertion",
                     label = "Convert"
                 ),
-                rHandsontableOutput("hottest")
+                rHandsontableOutput("handsontypes")
             )
     })
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
-    handsontable <- renderRHandsontable({
+    types_table <- renderRHandsontable({
         if (!is.null(input$uploaded_file)) {
-            if (is.null(input$hottest)) {
+            if (is.null(input$handsontypes)) {
                 DF = data.frame(Type = cbind(lapply(user_table(), typeof)),
                                 stringsAsFactors = TRUE)
+                DF$Type = factor(DF$Type, dataTypes)
             } else {
-                DF = hot_to_r(input$hottest)
+                DF = hot_to_r(input$handsontypes)
             }
-            DF$Type = factor(DF$Type, dataTypes)
-            rhandsontable(DF, readOnly = FALSE, selectCallback = TRUE) %>%
+            rhandsontable(DF, readOnly = FALSE) %>%
                 hot_table(stretchH = 'all', rowHeaderWidth = 120) %>%
                 hot_context_menu(allowRowEdit = TRUE, allowColEdit = TRUE)
         }
         else { return() }
     })
-    
-    # editable_table <-  DT::renderDataTable ({               
-    #     datatable(
-    #         user_table(),
-    #         selection = list(target = 'column'),
-    #         options = list(
-    #             autoWidth = FALSE,
-    #             align = 'center',
-    #             sDom = '<"top">rt<"bottom">ip',
-    #             scrollX = TRUE,
-    #             info = TRUE,
-    #             paging = TRUE,
-    #             oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
-    #             ordering = T,
-    #             pageLength = 10
-    #         ),
-    #         filter = "top"
-    #     )
-    # })
 
     convert.types <- function(obj, types){
         for(i in length(obj)){
@@ -93,24 +74,23 @@ function(input, output, session) {
         obj
     }
 
-        # for(r in input$hottest)
-        #     print(input$hottest[r,])
-        
-        # for(cn in names(hot_to_r(input$hottest)))
-        #     taab[[cn]] <- 
-        #     
-        #     print(nrow(hot_to_r(input$hottest)))
-        # new_DT <- transform(user_table())
-    
+    observe({
+        if (!is.null(input$handsontypes))
+            print(as.vector(t(hot_to_r(input$handsontypes))))
+    })
+
     observeEvent(input$button_table_convertion, {
-        hottestVector <- as.vector(t(hot_to_r(input$hottest)))
-        new_table <- convert.types(as.data.frame(user_table()), hottestVector)
+            hottestVector <- as.vector(t(hot_to_r(input$handsontypes)))
+        new_table <- convert.types(data.frame(user_table()), hottestVector)
         # print(new_table)
         str(new_table)
-    }
+        output$secondtable <-  DT::renderDataTable({
+            datatable(new_table)
+        })
+        }
     )
     # output$buttclick <- button_click
-    output$hottest <- handsontable
+    output$handsontypes <- types_table
     output$render_button <- button_render
     output$contents <- main_table
 }

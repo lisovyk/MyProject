@@ -66,7 +66,8 @@ material_page(
         tab_id = "second_tab",
         tags$br(),
         material_card(
-            tags$h5(" some content")
+            title = "User data table output:",
+            DT::dataTableOutput("secondtable")
         )
     )
 )
