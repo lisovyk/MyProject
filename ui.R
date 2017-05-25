@@ -46,7 +46,8 @@ material_page(
             )
         ),
         hr(),
-        rHandsontableOutput("hottest")
+        uiOutput("render_button")
+
     ),
     material_tabs(
         tabs = c(
