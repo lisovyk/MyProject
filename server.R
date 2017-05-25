@@ -14,7 +14,7 @@ function(input, output) {
         )
     })
     
-    editable_table <- DT::renderDataTable({
+    main_table <- DT::renderDataTable({
         datatable(
             user_table(),
             selection = list(target = 'column'),
@@ -33,30 +33,10 @@ function(input, output) {
         )
     })
     
-    edit_types <- DT::renderDataTable({
-        tab <- cbind(lapply(user_table(), typeof))
-        colnames(tab) <- "Type"
-        datatable(
-            tab,
-            selection = list(target = 'column'),
-            options = list(
-                dom = 't',
-                autoWidth = FALSE,
-                align = 'center',
-                scrollX = FALSE,
-                info = TRUE,
-                searching = FALSE,
-                paging = FALSE,
-                ordering = FALSE
-            ),
-            filter = "none"
-        )
-    })
     
     button_render <- renderUI({
         if(!is.null(input$uploaded_file))
             material_card(
-                DT::dataTableOutput("datatypes"),
                 material_button(
                     input_id = "button_table_convertion",
                     label = "Convert"
@@ -64,26 +44,22 @@ function(input, output) {
             )
     })
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
-    output$hottest <- renderRHandsontable({
+    handsontable <- renderRHandsontable({
         if (!is.null(input$uploaded_file)) {
             if (is.null(input$hottest)) {
                 DF = data.frame(Type = cbind(lapply(user_table(), typeof)),
-                                stringsAsFactors = FALSE)
+                                stringsAsFactors = TRUE)
             } else {
                 DF = hot_to_r(input$hottest)
             }
-            rhandsontable(DF,
-                          readOnly = FALSE) %>%
-                hot_col(col = "Type", type = "dropdown", source = dataTypes, readOnly = FALSE) %>%
+            DF$Type = factor(DF$Type, dataTypes)
+            rhandsontable(DF, readOnly = FALSE) %>%
                 hot_table(stretchH = 'all', rowHeaderWidth = 120) %>%
                 hot_context_menu(allowRowEdit = FALSE, allowColEdit = FALSE)
-            
         }
         else { return() }
-        
-        
     })
+    output$hottest <- handsontable
     output$render_button <- button_render
-    output$datatypes <- edit_types
-    output$contents <- editable_table
+    output$contents <- main_table
 }
