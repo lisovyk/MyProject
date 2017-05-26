@@ -39,12 +39,15 @@ material_page(
                 input_id = "upload_quote",
                 "Quote:",
                 choices = list(
-                    "None" = "",
+                    "None" = " ",
                     "Double Quote" = '"',
                     "Single Quote" = "'"
                 )
             )
-        )
+        ),
+        hr(),
+        uiOutput("render_button")
+
     ),
     material_tabs(
         tabs = c(
@@ -63,7 +66,8 @@ material_page(
         tab_id = "second_tab",
         tags$br(),
         material_card(
-            tags$h5(" some content")
+            title = "User data table output:",
+            DT::dataTableOutput("secondtable")
         )
     )
 )

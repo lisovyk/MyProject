@@ -1,49 +1,65 @@
+:root {
+    --main-color: #42A5F5;
+    --main-accent-color: #1E88E5;
+    --main-dark: #5a5a5a;
+}
 nav {
-    background-color: #42A5F5;
+    background-color: var(--main-color);
 }
 div table.dataTable tr.selected td,
 div table.dataTable td.selected {
-    background-color: #42A5F5 !important;
+    background-color: var(--main-color) !important;
 }
-.btn.btn-default.btn-file {
-    background-color: #42A5F5;
+
+/* Buttons */
+.btn {
+    background-color: var(--main-color);
 }
-.btn.btn-default.btn-file:hover {
-    background-color: #1E88E5;
+.btn:hover {
+    background-color: var(--main-accent-color);
 }
 .tabs .tab a:hover,
 .tabs .tab a.active {
-    color: #42A5F5;
+    color: var(--main-color);
 }
 .tabs .indicator {
-    color: #42A5F5;
-    background-color: #42A5F5;
+    color: var(--main-color);
+    background-color: var(--main-color);
 }
 .tabs .tab a {
-   color: #42A5F5; 
+   color: var(--main-color); 
 }
+/* Make "accepted header" more beautiful */
 [type="checkbox"]:checked+label:before {
     top: 1px;
     left: 1px;
     width: 7px;
     height: 13px;
-    border-right: 2px solid #42A5F5;
-    border-bottom: 2px solid #42A5F5;
+    border-right: 2px solid var(--main-color);
+    border-bottom: 2px solid var(--main-color);
 }
+/* Show header-accept box after acception */
 [type="checkbox"]:not(.filled-in)+label:after {
-    border: 2px solid #5a5a5a;
+    border: 2px solid var(--main-dark);
     -webkit-transform: scale(1); 
     transform: scale(1);
 }
+/* Turn off the animation of a box after clicking in header checkbox*/
 [type="checkbox"]+label:before {
     border: 2px solid transparent;
 }
 [type="radio"]:checked+label:after {
-    background-color: #42A5F5;
+    background-color: var(--main-color);
     transform: scale(0.6);
 }
 [type="radio"]:checked+label:before {
-    border: 2px solid #5A5A5A;
+    border: 2px solid var(--main-dark);
 }
-
-
+/* Put upload progress-bar on top of file_name line */
+.progress.shiny-file-input-progress {
+    margin-top: -23px;
+}
+/* put thing inside a side-bar to the top*/
+ul:not(.browser-default) {
+    padding-top: 0px;
+}

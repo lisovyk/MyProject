@@ -61,6 +61,11 @@ Source: CRAN
 Version: 2.6
 Hash: 8162b82ca4809c0d63c30aedbd7348e0
 
+Package: data.table
+Source: CRAN
+Version: 1.10.4
+Hash: 2c7c47ccb40d01c7b214c8eff818108d
+
 Package: dichromat
 Source: CRAN
 Version: 2.0-0
@@ -92,6 +97,11 @@ Package: hexbin
 Source: CRAN
 Version: 1.27.1
 Hash: 378383b2c37556649fd6b2ee0be7e2a5
+
+Package: hms
+Source: CRAN
+Version: 0.3
+Hash: 3fca8a1c97e6cfb297fe3f4690f82c58
 
 Package: htmltools
 Source: CRAN
@@ -183,6 +193,12 @@ Source: CRAN
 Version: 1.4.2
 Hash: 790c06c11c84041b814139d731a872b9
 Requires: Rcpp, plyr, stringr
+
+Package: rhandsontable
+Source: CRAN
+Version: 0.3.4
+Hash: 1c4d248a7eac1956b8a5c262cf90383a
+Requires: htmlwidgets, jsonlite, magrittr
 
 Package: scales
 Source: CRAN
