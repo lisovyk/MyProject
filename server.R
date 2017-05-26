@@ -62,7 +62,9 @@ function(input, output) {
     })
 
     convert.types <- function(obj, types){
-        for(i in length(obj)){
+        for(i in 1:length(types)){
+            # if (types[i] == 'integer')
+            #     obj[,i] <- as.integer(obj[,i])
             func <- switch(types[i],
                            integer = as.integer,
                            numeric = as.numeric,
@@ -71,6 +73,7 @@ function(input, output) {
                            logical = as.logical)
             obj[,i] <- func(obj[,i])
         }
+        print(str(obj))
         obj
     }
 
@@ -78,17 +81,19 @@ function(input, output) {
         if (!is.null(input$handsontypes))
             print(as.vector(t(hot_to_r(input$handsontypes))))
     })
-
+    
+    new_table <- eventReactive(input$button_table_convertion, {
+        hottestVector <- as.vector(t(hot_to_r(input$handsontypes)))
+        convert.types(data.frame(user_table()), hottestVector)
+    })
+    
+    
     observeEvent(input$button_table_convertion, {
-            hottestVector <- as.vector(t(hot_to_r(input$handsontypes)))
-        new_table <- convert.types(data.frame(user_table()), hottestVector)
-        # print(new_table)
-        str(new_table)
-        output$secondtable <-  DT::renderDataTable({
-            datatable(new_table)
+        print(str(new_table()))
+        print(hot_to_r(input$handsontypes))
         })
-        }
-    )
+    
+    output$secondtable <- DT::renderDataTable({ datatable(new_table()) })
     # output$buttclick <- button_click
     output$handsontypes <- types_table
     output$render_button <- button_render
