@@ -10,12 +10,25 @@ div table.dataTable tr.selected td,
 div table.dataTable td.selected {
     background-color: var(--main-color) !important;
 }
-
+/* Focus */
+input:not([type]):focus:not([readonly]), input[type=text]:focus:not([readonly]), input[type=password]:focus:not([readonly]), input[type=email]:focus:not([readonly]), input[type=url]:focus:not([readonly]), input[type=time]:focus:not([readonly]), input[type=date]:focus:not([readonly]), input[type=datetime]:focus:not([readonly]), input[type=datetime-local]:focus:not([readonly]), input[type=tel]:focus:not([readonly]), input[type=number]:focus:not([readonly]), input[type=search]:focus:not([readonly]), textarea.materialize-textarea:focus:not([readonly]) {
+    border-bottom: 1px solid var(--main-color);
+    box-shadow: 0 1px 0 0 var(--main-color);
+}
+.noUi-connect {
+    background: var(--main-color) !important;
+}
 /* Buttons */
 .btn {
     background-color: var(--main-color);
 }
 .btn:hover {
+    background-color: var(--main-accent-color);
+}
+.button:focus {
+    background-color: var(--main-accent-color);
+}
+.btn:focus, .btn-large:focus, .btn-floating:focus {
     background-color: var(--main-accent-color);
 }
 .tabs .tab a:hover,

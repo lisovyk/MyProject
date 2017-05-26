@@ -67,7 +67,13 @@ material_page(
         tags$br(),
         material_card(
             title = "User data table output:",
-            DT::dataTableOutput("secondtable")
+            material_checkbox(
+                input_id = "remove_na",
+                label = "Remove NA's",
+                initial_value = FALSE
+            ),
+            DT::dataTableOutput("secondtable"),
+            DT::dataTableOutput("thirdtable")
         )
     )
 )
