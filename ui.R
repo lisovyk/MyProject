@@ -59,21 +59,15 @@ material_page(
         tab_id = "first_tab",
         material_card(
             title = "User data table output:",
-            DT::dataTableOutput("contents")
+            DT::dataTableOutput("main_user_table")
+            # DT::dataTableOutput("contents")
         )
     ),
     material_tab_content(
         tab_id = "second_tab",
         tags$br(),
         material_card(
-            title = "User data table output:",
-            material_checkbox(
-                input_id = "remove_na",
-                label = "Remove NA's",
-                initial_value = FALSE
-            ),
-            DT::dataTableOutput("secondtable"),
-            DT::dataTableOutput("thirdtable")
+            title = "output2:"
         )
     )
 )

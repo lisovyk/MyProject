@@ -1,2 +1,26 @@
-css file upload queue
-example: tab's color on load
+done: 
+1 table output
+NAs counter - винести функцію за межі types_table??
+
+to do:
+rhandsontable is not updating; як зробити його reactive ?
+rhandson NAs set to 0 when NA checkbox is evaluated
+checkboxes in rhandson
+
+questions:
+Що саме зберігати в ReactVal ?
+Приклади observers / reactive expr 
+Differences between reactive expressions and observers
+
+
+? isolate(input..)
+
+не підтягує в рхендсон нову табличку при новому csv
+rows in rhandsontable
+
+рішення по рхендсон щоб видавало назад NA:
+# if(!input$checkbox_delete_rows){
+#     nt$userTable <- 
+# }
+
+ bug with columnts 4 -> 3 -> 2
