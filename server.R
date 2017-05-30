@@ -7,7 +7,7 @@ function(input, output) {
         )
         fread(
             input$uploaded_file$datapath,
-            header = input$header,
+            header = input$header_switch,
             sep = input$upload_sep,
             quote = input$upload_quote,
             stringsAsFactors = FALSE
