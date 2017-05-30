@@ -21,10 +21,14 @@ material_page(
                 "Note: 5 MB is the maximum file size...",
                 "for now."
             ),
-            material_checkbox(
-                input_id = "header",
-                label = "Header",
-                initial_value = TRUE
+            br(),
+            material_switch(
+                input_id = "header_switch",
+                label = "",
+                off_label = "Header:",
+                on_label = "",
+                initial_value = TRUE,
+                color = "#42A5F5"
             ),
             material_radio_button(
                 input_id = "upload_sep",
@@ -60,7 +64,6 @@ material_page(
         material_card(
             title = "User data table output:",
             DT::dataTableOutput("main_user_table")
-            # DT::dataTableOutput("contents")
         )
     ),
     material_tab_content(
