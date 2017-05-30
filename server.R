@@ -9,7 +9,7 @@ function(input, output) {
             input$uploaded_file$datapath,
             header = input$header,
             sep = input$upload_sep,
-            quote = ifelse(input$upload_quote == " ", "", input$upload_quote),
+            quote = input$upload_quote,
             stringsAsFactors = FALSE
         )
     })

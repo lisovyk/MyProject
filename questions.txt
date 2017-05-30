@@ -2,6 +2,7 @@ done:
 reactiveValues
 observeEvent on apply button
 new file upload works correctly
+reordered code
 
 to do:
 bug: rhandson deletes not used rows from user table, which it should not
