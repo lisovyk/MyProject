@@ -1,4 +1,5 @@
 library(packrat)
+library(devtools)
 library(plotly)
 library(shiny)
 library(shinymaterial)

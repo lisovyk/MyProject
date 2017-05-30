@@ -66,6 +66,13 @@ Source: CRAN
 Version: 1.10.4
 Hash: 2c7c47ccb40d01c7b214c8eff818108d
 
+Package: devtools
+Source: CRAN
+Version: 1.13.1
+Hash: 8dadb6c6a916c8312dddc7b4d394c9f3
+Requires: digest, git2r, httr, jsonlite, memoise, rstudioapi, whisker,
+    withr
+
 Package: dichromat
 Source: CRAN
 Version: 2.0-0
@@ -87,6 +94,11 @@ Source: CRAN
 Version: 2.2.1
 Hash: 46e5cb78836848aa44655e577433f54b
 Requires: digest, gtable, lazyeval, plyr, reshape2, scales, tibble
+
+Package: git2r
+Source: CRAN
+Version: 0.18.0
+Hash: 9dfaafbcca68be29b89ef7783dc1dac0
 
 Package: gtable
 Source: CRAN
@@ -147,6 +159,12 @@ Source: CRAN
 Version: 1.5
 Hash: bdc4d48c3135e8f3b399536ddf160df4
 
+Package: memoise
+Source: CRAN
+Version: 1.1.0
+Hash: 410fcd334bc626db100237cc1370f2e9
+Requires: digest
+
 Package: mime
 Source: CRAN
 Version: 0.5
@@ -200,6 +218,11 @@ Version: 0.3.4
 Hash: 1c4d248a7eac1956b8a5c262cf90383a
 Requires: htmlwidgets, jsonlite, magrittr
 
+Package: rstudioapi
+Source: CRAN
+Version: 0.6
+Hash: fd256f8bfb9a64cc35f98b0decb1a79f
+
 Package: scales
 Source: CRAN
 Version: 0.4.1
@@ -214,10 +237,14 @@ Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
     xtable
 
 Package: shinymaterial
-Source: CRAN
-Version: 0.2.1
-Hash: e80acb583553321810faac328dfcf8ba
+Source: github
+Version: 0.2.1.9000
+Hash: dd152268f39fd362dd734895f28b995c
 Requires: shiny
+GithubRepo: shinymaterial
+GithubUsername: ericrayanderson
+GithubRef: master
+GithubSha1: 15b6bbd8b92800da986066847711e75295c97258
 
 Package: sourcetools
 Source: CRAN
@@ -251,6 +278,16 @@ Package: viridisLite
 Source: CRAN
 Version: 0.2.0
 Hash: 10f0c25af3dc84eaae10f5854f47efdb
+
+Package: whisker
+Source: CRAN
+Version: 0.3-2
+Hash: 803d662762e532705c2c066a82d066e7
+
+Package: withr
+Source: CRAN
+Version: 1.0.2
+Hash: 774eb7be9087cdc24b53b74e5359cfac
 
 Package: xtable
 Source: CRAN

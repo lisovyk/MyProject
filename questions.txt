@@ -1,2 +1,10 @@
-css file upload queue
-example: tab's color on load
+done: 
+reactiveValues
+observeEvent on apply button
+new file upload works correctly
+
+to do:
+bug: rhandson deletes not used rows from user table, which it should not
+
+questions:
+numeric turns into double in rhandson
