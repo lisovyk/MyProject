@@ -2,22 +2,19 @@ done:
 plotly
 
 to do:
-# modal if NAs are in table
+! highcharter (dropdown with plotly/highcharter choices, responsive UI)
 ! bug: rhandson deletes not used rows from user table, which it should not
-!urgent Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
-
+! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
 на графс табі нові контроли для графс
+? modal if NAs are in table
+
+
 bug: crash on 2 columns left
-dropdown:
-plotly 
-highcharts
+
 
 bug: upload bugged, multiple uploads
 
 questions:
-
-
-
 
 
 
