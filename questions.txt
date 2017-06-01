@@ -1,11 +1,24 @@
 done: 
-reactiveValues
-observeEvent on apply button
-new file upload works correctly
-reordered code
+plotly
 
 to do:
-bug: rhandson deletes not used rows from user table, which it should not
+# modal if NAs are in table
+! bug: rhandson deletes not used rows from user table, which it should not
+!urgent Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
+
+на графс табі нові контроли для графс
+bug: crash on 2 columns left
+dropdown:
+plotly 
+highcharts
+
+bug: upload bugged, multiple uploads
 
 questions:
-numeric turns into double in rhandson
+
+
+
+
+
+
+"$('a.active').attr('href') == '#second_tab'")

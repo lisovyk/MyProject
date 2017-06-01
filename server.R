@@ -13,28 +13,27 @@ function(input, output) {
             stringsAsFactors = FALSE
         )
     })
-    observeEvent(user_table(), {
-        rv$user_table_init <- user_table()
-        })
     
+    observeEvent(input$uploaded_file, {
+        rv$user_table_init <- user_table()
+        rv$userTable <- user_table()
+    })
     #functions
     convert.types <- function(obj, types){
         for(i in 1:length(types)){
-            if( typeof(obj[,i]) == types[i, 1]) { next }
-            
+            if( class(obj[,i]) != types[i, 1]) {
             func <- switch(types[i, 1],
                            integer = as.integer,
                            numeric = as.numeric,
                            factor = as.factor,
                            character = as.character,
-                           logical = as.logical,
-                           double = as.double)
+                           logical = as.logical)
             obj[,i] <- func(obj[,i])
+            }
         }
         obj
     }
-    
-    
+
     #buttons ui
     button_render <- renderUI({
         if(!is.null(input$uploaded_file))
@@ -61,50 +60,126 @@ function(input, output) {
                 rHandsontableOutput("handsontypes")
             )
     })
+    button_graph <- renderUI({
+        if(!is.null(input$uploaded_file)){
+            material_row(
+                material_column(
+                    actionButton(
+                        inputId = "plotlyButton",
+                        label = "Make graph",
+                        depth = 0
+                    ),
+                    width = 2
+                ),
+                material_column(
+                    selectInput(
+                        inputId = "graph_x",
+                        label = "X asis",
+                        choices = c(colnames(rv$userTable)),
+                        multiple = FALSE
+                    ),
+                    selectInput(
+                        inputId = "graph_y",
+                        label = "Y asis",
+                        choices = c(colnames(rv$userTable)),
+                        selected = c("c"),
+                        multiple = FALSE
+                    ),
+                    width = 2
+                ),
+                material_column(
+                    selectInput(
+                        inputId = "plotlyColor",
+                        label = "Coloring",
+                        choices = c("Standart", colnames(rv$userTable)),
+                        selected = c("Standart"),
+                        multiple = FALSE
+                    ),
+                    selectInput(
+                        inputId = "plotlyType",
+                        label = "Type",
+                        choices = c("Scatter", "Bar", "Area"),
+                        selected = c("Standart"),
+                        multiple = FALSE
+                    ),
+                    width = 2
+                )
+            )
+        }
+    })
     
 
     #buttons events
     observeEvent(c(input$button_table_convertion), {
-        if(!input$checkbox_delete_rows){
-            rv$user_table_init <- user_table()
-        }
-        rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
-        if(input$button_table_convertion) {  #  doesnt work w/o it! error on hot_to_r(input$handsontypes)
-            if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
-                rv$user_table_init <- rv$userTable[-as.numeric(input$main_user_table_rows_selected), ]
-                rv$userTable <- rv$user_table_init
+        if(input$button_table_convertion >= 1){
+            if(!input$checkbox_delete_rows){
+                rv$user_table_init <- user_table()
             }
-            user_input <- hot_to_r(input$handsontypes)
-            rv$userTable <- convert.types(rv$userTable, user_input)
-            
-            if(input$remove_na) {
-                rv$userTable <- rv$userTable[complete.cases(rv$userTable),]
-            }
-            
-            if(input$remove_col) {
-                drops <- vector(mode = "character")
-                for(i in 1:nrow(user_input)) {
-                    if(user_input[i, "UseColumn"] == FALSE) { 
-                        drops <- c(rownames(user_input[i, ]), drops)
-                    }
+            rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
+                if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
+                    rv$user_table_init <- rv$userTable[-as.numeric(input$main_user_table_rows_selected), ]
+                    rv$userTable <- rv$user_table_init
                 }
-                user_input <- user_input[!(rownames(user_input) %in% drops), ]
-                rv$userTable <- rv$userTable[ , rownames(user_input)]
-            }
+                user_input <- hot_to_r(input$handsontypes)
+                rv$userTable <- convert.types(rv$userTable, user_input)
+                
+                if(input$remove_na) {
+                    rv$userTable <- rv$userTable[complete.cases(rv$userTable),]
+                }
+                
+                if(input$remove_col) {
+                    drops <- vector(mode = "character")
+                    for(i in 1:nrow(user_input)) {
+                        if(user_input[i, "UseColumn"] == FALSE) { 
+                            drops <- c(rownames(user_input[i, ]), drops)
+                        }
+                    }
+                    user_input <- user_input[!(rownames(user_input) %in% drops), ]
+                    rv$userTable <- rv$userTable[ , rownames(user_input)]
+                }
         }
     })
     
+    observeEvent(c(input$plotlyButton), {
+        if(input$plotlyButton >= 1) {
+            rv$ColnameX <- input$graph_x
+            rv$ColnameY <- input$graph_y
+            rv$graphColor <- NULL
+            rv$plotlyType <- NULL
+            rv$plotlyFill <- NULL
+            rv$plotlySize <- NULL
+            if(input$plotlyColor != "Standart"){
+                if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
+                    class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
+                    rv$graphColor <- rv$userTable[, input$plotlyColor]
+                } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
+                    rv$graphColor <- rv$userTable[, input$plotlyColor]
+            }
+            if (input$plotlyType == "Scatter") {
+                rv$plotlyType <- "scatter"
+                rv$plotlyMode <- "lines"    
+            } else if (input$plotlyType == "Bar") {
+                rv$plotlyType <- "bar"
+                rv$plotlyMode <- "markers" 
+            } else if (input$plotlyType == "Area") {
+                rv$plotlyType <- "scatter"
+                rv$plotlyMode <- "markers" 
+                rv$plotlyFill <- "tozeroy"
+            } 
+        }       
+    })
     
-    dataTypes <- c("integer", "numeric", "factor", "character", "logical", "double")
+    
+    dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
-        DF = data.frame(Type = cbind(lapply(rv$userTable, typeof)),
+        DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
                         UseColumn = rep(TRUE, times = length(rv$userTable)),
                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
                         stringsAsFactors = FALSE)
         DF$Type = factor(DF$Type, dataTypes)
         DF$UseColumn = factor(DF$UseColumn, c(TRUE, FALSE))
         rhandsontable(DF, selectCallback = TRUE, readOnly = FALSE) %>%
-            # hot_table(stretchH = 'all') %>%
+            hot_table(stretchH = 'all') %>%
             hot_context_menu(allowRowEdit = TRUE, allowColEdit = TRUE)
     })
     
@@ -130,13 +205,28 @@ function(input, output) {
                   filter = "top",
                   colnames = paste0(colnames(rv$userTable),
                                     " (",
-                                    cbind(lapply(rv$userTable, typeof)),
+                                    cbind(lapply(rv$userTable, class)),
                                     ")")
         )
     })
-
     
+    plotlygraph <- renderPlotly({
+        validate(
+            need(input$plotlyButton >= 1, message = FALSE),
+            errorClass = "plotly_err"
+        )
+        plot_ly(rv$userTable,
+                type = rv$plotlyType,
+                x = rv$userTable[, rv$ColnameX],
+                y = rv$userTable[, rv$ColnameY],
+                color = rv$graphColor,
+                fill = rv$plotlyFill)
+
+        
+    })
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
+    output$graph_buttons <- button_graph
+    output$plotlyGraph <- plotlygraph
 }
