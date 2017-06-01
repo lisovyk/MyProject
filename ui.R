@@ -51,7 +51,6 @@ material_page(
         ),
         hr(),
         uiOutput("render_button")
-
     ),
     material_tabs(
         tabs = c(
@@ -68,9 +67,12 @@ material_page(
     ),
     material_tab_content(
         tab_id = "second_tab",
-        tags$br(),
-        material_card(
-            title = "output2:"
+        material_row(
+            uiOutput("graph_buttons")
+        ),
+        material_row(
+            plotlyOutput("plotlyGraph")
         )
     )
+    
 )
