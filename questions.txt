@@ -2,8 +2,11 @@ done:
 plotly
 
 to do:
+вивч ієрарх. кластир, kamins
+highchart delete
+only scatter
+Y only numeric
 highcharter color support
-! highcharter (dropdown with plotly/highcharter choices, responsive UI)
 ! bug: rhandson deletes not used cols from user table, which it should not
 ! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
 rewrite convert.types(causes error if you delete up to 2 cols left and then get them back; probably will fix itself with delete-cols bug

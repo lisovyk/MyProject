@@ -20,15 +20,15 @@ function(input, output) {
     })
     #functions
     convert.types <- function(obj, types){
-        for(i in 1:length(types)){
+        for(i in 1:nrow(types)){
             if( class(obj[,i]) != types[i, 1]) {
-            func <- switch(types[i, 1],
-                           integer = as.integer,
-                           numeric = as.numeric,
-                           factor = as.factor,
-                           character = as.character,
-                           logical = as.logical)
-            obj[,i] <- func(obj[,i])
+                func <- switch(types[i, 1],
+                               integer = as.integer,
+                               numeric = as.numeric,
+                               factor = as.factor,
+                               character = as.character,
+                               logical = as.logical)
+                obj[,i] <- func(obj[,i])
             }
         }
         obj
@@ -181,15 +181,19 @@ function(input, output) {
                     rv$plotlyType <- "bar"
                 } else if (input$plotlyType == "Area") {
                     rv$plotlyType <- "area"
-                } 
+                }
+                if(input$plotlyColor != "Standart"){
+                    if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
+                        class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
+                        rv$graphColor <- rv$userTable[, input$plotlyColor]
+                    } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
+                        rv$graphColor <- rv$userTable[, input$plotlyColor]
+                }
             }
         }       
     })
     
-    # observe({
-    #     typesDF
-    #     print(head(typesDF()))
-    # })
+
     typesDF <- reactive({
         DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
                         UseColumn = rep(TRUE, times = length(rv$userTable)),
@@ -259,9 +263,7 @@ function(input, output) {
 
         
     })
-    observe({
-        
-    })
+
     highchartGraph <- renderHighchart({
         validate(
             need(input$graphButton >= 1 & input$graph_choose == c("highcharter"), message = FALSE),
@@ -271,15 +273,16 @@ function(input, output) {
         X <- rv$ColnameX
         Y <- rv$ColnameY
         Type <- rv$plotlyType
-        # hchart(userTable, "scatter", hcaes(x = X,
-        #                                    y = Y)
-        # )
+        Color <- rv$graphColor
+
         outp <- highchart() %>%
             hc_title(text = "highcharter") %>%
             hc_add_series(data = cbind(userTable[[X]], userTable[[Y]]),
-                          type = Type)
+                          type = Type,
+                          colors = colorize(Color))
         outp
     })
+    
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
