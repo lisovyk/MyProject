@@ -45,7 +45,7 @@ function(input, output) {
                 material_checkbox(
                     input_id = "remove_na",
                     label = "Remove NA's",
-                    initial_value = FALSE
+                    initial_value = TRUE
                 ),
                 material_checkbox(
                     input_id = "remove_col",
@@ -64,14 +64,21 @@ function(input, output) {
         if(!is.null(input$uploaded_file)){
             material_row(
                 material_column(
+                    width = 2,
+                    selectInput(
+                        inputId = "graph_choose",
+                        label = "Choose lib",
+                        choices = c("plotly", "highcharter"),
+                        selected = c("plotly")
+                    ),
                     actionButton(
-                        inputId = "plotlyButton",
+                        inputId = "graphButton",
                         label = "Make graph",
                         depth = 0
-                    ),
-                    width = 2
+                    )
                 ),
                 material_column(
+                    width = 2,
                     selectInput(
                         inputId = "graph_x",
                         label = "X asis",
@@ -84,10 +91,10 @@ function(input, output) {
                         choices = c(colnames(rv$userTable)),
                         selected = c("c"),
                         multiple = FALSE
-                    ),
-                    width = 2
+                    )
                 ),
                 material_column(
+                    width = 2,
                     selectInput(
                         inputId = "plotlyColor",
                         label = "Coloring",
@@ -101,8 +108,7 @@ function(input, output) {
                         choices = c("Scatter", "Bar", "Area"),
                         selected = c("Standart"),
                         multiple = FALSE
-                    ),
-                    width = 2
+                    )
                 )
             )
         }
@@ -140,32 +146,37 @@ function(input, output) {
         }
     })
     
-    observeEvent(c(input$plotlyButton), {
-        if(input$plotlyButton >= 1) {
-            rv$ColnameX <- input$graph_x
-            rv$ColnameY <- input$graph_y
-            rv$graphColor <- NULL
-            rv$plotlyType <- NULL
-            rv$plotlyFill <- NULL
-            rv$plotlySize <- NULL
-            if(input$plotlyColor != "Standart"){
-                if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
-                    class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
-                    rv$graphColor <- rv$userTable[, input$plotlyColor]
-                } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
-                    rv$graphColor <- rv$userTable[, input$plotlyColor]
+    observeEvent(c(input$graphButton), {
+        if(input$graphButton >= 1) {
+            if(input$graph_choose == c("plotly")) {
+                rv$ColnameX <- input$graph_x
+                rv$ColnameY <- input$graph_y
+                rv$graphColor <- NULL
+                rv$plotlyType <- NULL
+                rv$plotlyFill <- NULL
+                rv$plotlySize <- NULL
+                if(input$plotlyColor != "Standart"){
+                    if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
+                        class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
+                        rv$graphColor <- rv$userTable[, input$plotlyColor]
+                    } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
+                        rv$graphColor <- rv$userTable[, input$plotlyColor]
+                }
+                if (input$plotlyType == "Scatter") {
+                    rv$plotlyType <- "scatter"
+                    rv$plotlyMode <- "lines"    
+                } else if (input$plotlyType == "Bar") {
+                    rv$plotlyType <- "bar"
+                    rv$plotlyMode <- "markers" 
+                } else if (input$plotlyType == "Area") {
+                    rv$plotlyType <- "scatter"
+                    rv$plotlyMode <- "markers" 
+                    rv$plotlyFill <- "tozeroy"
+                } 
             }
-            if (input$plotlyType == "Scatter") {
-                rv$plotlyType <- "scatter"
-                rv$plotlyMode <- "lines"    
-            } else if (input$plotlyType == "Bar") {
-                rv$plotlyType <- "bar"
-                rv$plotlyMode <- "markers" 
-            } else if (input$plotlyType == "Area") {
-                rv$plotlyType <- "scatter"
-                rv$plotlyMode <- "markers" 
-                rv$plotlyFill <- "tozeroy"
-            } 
+            if(input$graph_choose == c("highcharter")) {
+                return()
+            }
         }       
     })
     
@@ -212,7 +223,7 @@ function(input, output) {
     
     plotlygraph <- renderPlotly({
         validate(
-            need(input$plotlyButton >= 1, message = FALSE),
+            need(input$graphButton >= 1 & input$graph_choose == c("plotly"), message = FALSE),
             errorClass = "plotly_err"
         )
         plot_ly(rv$userTable,
@@ -220,13 +231,30 @@ function(input, output) {
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
                 color = rv$graphColor,
-                fill = rv$plotlyFill)
+                fill = rv$plotlyFill,
+                opacity = 0.5)
 
         
+    })
+    highchartGraph <- renderHighchart({
+        validate(
+            need(input$graphButton >= 1 & input$graph_choose == c("highcharter"), message = FALSE),
+            errorClass = "highchart_err"
+        )
+        # hchart(rv$userTable, "scatter", hcaes(x = c(input$graph_x),
+        #                                       y = c(input$graph_y))
+        # )
+        outp <- highchart() %>%
+            hc_title(text = "mtcars scatter chart") %>%
+            hc_add_series(data = c(mtcars[,2], mtcars[,4]),
+                          type = "scatter")
+        outp
+    #     
     })
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
+    output$highchartGraph <- highchartGraph
 }

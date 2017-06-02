@@ -71,7 +71,8 @@ material_page(
             uiOutput("graph_buttons")
         ),
         material_row(
-            plotlyOutput("plotlyGraph")
+            plotlyOutput("plotlyGraph"),
+            highchartOutput("highchartGraph")
         )
     )
     
