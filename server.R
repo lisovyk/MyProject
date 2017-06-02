@@ -148,9 +148,9 @@ function(input, output) {
     
     observeEvent(c(input$graphButton), {
         if(input$graphButton >= 1) {
+            rv$ColnameX <- input$graph_x
+            rv$ColnameY <- input$graph_y
             if(input$graph_choose == c("plotly")) {
-                rv$ColnameX <- input$graph_x
-                rv$ColnameY <- input$graph_y
                 rv$graphColor <- NULL
                 rv$plotlyType <- NULL
                 rv$plotlyFill <- NULL
@@ -175,12 +175,36 @@ function(input, output) {
                 } 
             }
             if(input$graph_choose == c("highcharter")) {
-                return()
+                if (input$plotlyType == "Scatter") {
+                    rv$plotlyType <- "scatter"  
+                } else if (input$plotlyType == "Bar") {
+                    rv$plotlyType <- "bar"
+                } else if (input$plotlyType == "Area") {
+                    rv$plotlyType <- "area"
+                } 
             }
         }       
     })
     
-    
+    # observe({
+    #     typesDF
+    #     print(head(typesDF()))
+    # })
+    typesDF <- reactive({
+        DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
+                        UseColumn = rep(TRUE, times = length(rv$userTable)),
+                        NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
+                        stringsAsFactors = FALSE)
+        DF1$Type = factor(DF1$Type, dataTypes)
+        DF1$UseColumn = factor(DF1$UseColumn, c(TRUE, FALSE))
+        DF2 = data.frame(Type = cbind(lapply(rv$user_table_init, class)),
+                         UseColumn = rep(TRUE, times = length(rv$user_table_init)),
+                         NAs = sapply(rv$user_table_init, function(y) sum(is.na(y))),
+                         stringsAsFactors = FALSE)
+        DF2$Type = factor(DF2$Type, dataTypes)
+        DF2$UseColumn = factor(DF2$UseColumn, c(TRUE, FALSE))
+        merge(DF2,DF1, all.x = TRUE)
+    })
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
         DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
@@ -231,9 +255,11 @@ function(input, output) {
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
                 color = rv$graphColor,
-                fill = rv$plotlyFill,
-                opacity = 0.5)
+                fill = rv$plotlyFill)
 
+        
+    })
+    observe({
         
     })
     highchartGraph <- renderHighchart({
@@ -241,15 +267,18 @@ function(input, output) {
             need(input$graphButton >= 1 & input$graph_choose == c("highcharter"), message = FALSE),
             errorClass = "highchart_err"
         )
-        # hchart(rv$userTable, "scatter", hcaes(x = c(input$graph_x),
-        #                                       y = c(input$graph_y))
+        userTable <- rv$userTable
+        X <- rv$ColnameX
+        Y <- rv$ColnameY
+        Type <- rv$plotlyType
+        # hchart(userTable, "scatter", hcaes(x = X,
+        #                                    y = Y)
         # )
         outp <- highchart() %>%
-            hc_title(text = "mtcars scatter chart") %>%
-            hc_add_series(data = c(mtcars[,2], mtcars[,4]),
-                          type = "scatter")
+            hc_title(text = "highcharter") %>%
+            hc_add_series(data = cbind(userTable[[X]], userTable[[Y]]),
+                          type = Type)
         outp
-    #     
     })
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
