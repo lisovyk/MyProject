@@ -65,12 +65,6 @@ function(input, output) {
             material_row(
                 material_column(
                     width = 2,
-                    selectInput(
-                        inputId = "graph_choose",
-                        label = "Choose lib",
-                        choices = c("plotly", "highcharter"),
-                        selected = c("plotly")
-                    ),
                     actionButton(
                         inputId = "graphButton",
                         label = "Make graph",
@@ -81,14 +75,14 @@ function(input, output) {
                     width = 2,
                     selectInput(
                         inputId = "graph_x",
-                        label = "X asis",
-                        choices = c(colnames(rv$userTable)),
+                        label = "X axis",
+                        choices = rv$AvailableCols,
                         multiple = FALSE
                     ),
                     selectInput(
                         inputId = "graph_y",
-                        label = "Y asis",
-                        choices = c(colnames(rv$userTable)),
+                        label = "Y axis",
+                        choices = rv$AvailableCols,
                         selected = c("c"),
                         multiple = FALSE
                     )
@@ -99,13 +93,6 @@ function(input, output) {
                         inputId = "plotlyColor",
                         label = "Coloring",
                         choices = c("Standart", colnames(rv$userTable)),
-                        selected = c("Standart"),
-                        multiple = FALSE
-                    ),
-                    selectInput(
-                        inputId = "plotlyType",
-                        label = "Type",
-                        choices = c("Scatter", "Bar", "Area"),
                         selected = c("Standart"),
                         multiple = FALSE
                     )
@@ -150,50 +137,31 @@ function(input, output) {
         if(input$graphButton >= 1) {
             rv$ColnameX <- input$graph_x
             rv$ColnameY <- input$graph_y
-            if(input$graph_choose == c("plotly")) {
-                rv$graphColor <- NULL
-                rv$plotlyType <- NULL
-                rv$plotlyFill <- NULL
-                rv$plotlySize <- NULL
-                if(input$plotlyColor != "Standart"){
-                    if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
-                        class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
-                        rv$graphColor <- rv$userTable[, input$plotlyColor]
-                    } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
-                        rv$graphColor <- rv$userTable[, input$plotlyColor]
-                }
-                if (input$plotlyType == "Scatter") {
-                    rv$plotlyType <- "scatter"
-                    rv$plotlyMode <- "lines"    
-                } else if (input$plotlyType == "Bar") {
-                    rv$plotlyType <- "bar"
-                    rv$plotlyMode <- "markers" 
-                } else if (input$plotlyType == "Area") {
-                    rv$plotlyType <- "scatter"
-                    rv$plotlyMode <- "markers" 
-                    rv$plotlyFill <- "tozeroy"
-                } 
-            }
-            if(input$graph_choose == c("highcharter")) {
-                if (input$plotlyType == "Scatter") {
-                    rv$plotlyType <- "scatter"  
-                } else if (input$plotlyType == "Bar") {
-                    rv$plotlyType <- "bar"
-                } else if (input$plotlyType == "Area") {
-                    rv$plotlyType <- "area"
-                }
-                if(input$plotlyColor != "Standart"){
-                    if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
-                        class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
-                        rv$graphColor <- rv$userTable[, input$plotlyColor]
-                    } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
-                        rv$graphColor <- rv$userTable[, input$plotlyColor]
-                }
+            rv$graphColor <- NULL
+            rv$plotlyType <- "scatter"
+            if(input$plotlyColor != "Standart"){
+                if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
+                    class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
+                    rv$graphColor <- rv$userTable[, input$plotlyColor]
+                } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
+                    rv$graphColor <- rv$userTable[, input$plotlyColor]
             }
         }       
     })
     
-
+    #Available names for Axises
+    observeEvent(rv$userTable, {
+        rv$AvailableCols <- character(0)
+        ColClass <- sapply(rv$userTable, class)
+        for(i in 1:length(ColClass)){
+            if(ColClass[i] == "numeric" || ColClass[i] == "factor" || ColClass[i] == "integer"){
+                rv$AvailableCols <- c(rv$AvailableCols, names(ColClass[i]))
+            }
+            rv$AvailableCols
+        }
+    })
+    
+    
     typesDF <- reactive({
         DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
                         UseColumn = rep(TRUE, times = length(rv$userTable)),
@@ -251,42 +219,24 @@ function(input, output) {
     
     plotlygraph <- renderPlotly({
         validate(
-            need(input$graphButton >= 1 & input$graph_choose == c("plotly"), message = FALSE),
+            need(input$graphButton >= 1, message = FALSE),
             errorClass = "plotly_err"
         )
         plot_ly(rv$userTable,
                 type = rv$plotlyType,
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
-                color = rv$graphColor,
-                fill = rv$plotlyFill)
+                color = rv$graphColor)
 
         
     })
 
-    highchartGraph <- renderHighchart({
-        validate(
-            need(input$graphButton >= 1 & input$graph_choose == c("highcharter"), message = FALSE),
-            errorClass = "highchart_err"
-        )
-        userTable <- rv$userTable
-        X <- rv$ColnameX
-        Y <- rv$ColnameY
-        Type <- rv$plotlyType
-        Color <- rv$graphColor
-
-        outp <- highchart() %>%
-            hc_title(text = "highcharter") %>%
-            hc_add_series(data = cbind(userTable[[X]], userTable[[Y]]),
-                          type = Type,
-                          colors = colorize(Color))
-        outp
-    })
+   
     
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
-    output$highchartGraph <- highchartGraph
+    
 }
