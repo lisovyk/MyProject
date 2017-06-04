@@ -20,15 +20,15 @@ function(input, output) {
     })
     #functions
     convert.types <- function(obj, types){
-        for(i in 1:length(types)){
+        for(i in 1:nrow(types)){
             if( class(obj[,i]) != types[i, 1]) {
-            func <- switch(types[i, 1],
-                           integer = as.integer,
-                           numeric = as.numeric,
-                           factor = as.factor,
-                           character = as.character,
-                           logical = as.logical)
-            obj[,i] <- func(obj[,i])
+                func <- switch(types[i, 1],
+                               integer = as.integer,
+                               numeric = as.numeric,
+                               factor = as.factor,
+                               character = as.character,
+                               logical = as.logical)
+                obj[,i] <- func(obj[,i])
             }
         }
         obj
@@ -45,7 +45,7 @@ function(input, output) {
                 material_checkbox(
                     input_id = "remove_na",
                     label = "Remove NA's",
-                    initial_value = FALSE
+                    initial_value = TRUE
                 ),
                 material_checkbox(
                     input_id = "remove_col",
@@ -64,45 +64,38 @@ function(input, output) {
         if(!is.null(input$uploaded_file)){
             material_row(
                 material_column(
+                    width = 2,
                     actionButton(
-                        inputId = "plotlyButton",
+                        inputId = "graphButton",
                         label = "Make graph",
                         depth = 0
-                    ),
-                    width = 2
+                    )
                 ),
                 material_column(
+                    width = 2,
                     selectInput(
                         inputId = "graph_x",
-                        label = "X asis",
-                        choices = c(colnames(rv$userTable)),
+                        label = "X axis",
+                        choices = rv$AvailableCols,
                         multiple = FALSE
                     ),
                     selectInput(
                         inputId = "graph_y",
-                        label = "Y asis",
-                        choices = c(colnames(rv$userTable)),
+                        label = "Y axis",
+                        choices = rv$AvailableCols,
                         selected = c("c"),
                         multiple = FALSE
-                    ),
-                    width = 2
+                    )
                 ),
                 material_column(
+                    width = 2,
                     selectInput(
                         inputId = "plotlyColor",
                         label = "Coloring",
                         choices = c("Standart", colnames(rv$userTable)),
                         selected = c("Standart"),
                         multiple = FALSE
-                    ),
-                    selectInput(
-                        inputId = "plotlyType",
-                        label = "Type",
-                        choices = c("Scatter", "Bar", "Area"),
-                        selected = c("Standart"),
-                        multiple = FALSE
-                    ),
-                    width = 2
+                    )
                 )
             )
         }
@@ -140,14 +133,12 @@ function(input, output) {
         }
     })
     
-    observeEvent(c(input$plotlyButton), {
-        if(input$plotlyButton >= 1) {
+    observeEvent(c(input$graphButton), {
+        if(input$graphButton >= 1) {
             rv$ColnameX <- input$graph_x
             rv$ColnameY <- input$graph_y
             rv$graphColor <- NULL
-            rv$plotlyType <- NULL
-            rv$plotlyFill <- NULL
-            rv$plotlySize <- NULL
+            rv$plotlyType <- "scatter"
             if(input$plotlyColor != "Standart"){
                 if (class(rv$userTable[, input$plotlyColor]) == "integer" ||
                     class(rv$userTable[, input$plotlyColor]) == "numeric" ) {
@@ -155,21 +146,37 @@ function(input, output) {
                 } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
                     rv$graphColor <- rv$userTable[, input$plotlyColor]
             }
-            if (input$plotlyType == "Scatter") {
-                rv$plotlyType <- "scatter"
-                rv$plotlyMode <- "lines"    
-            } else if (input$plotlyType == "Bar") {
-                rv$plotlyType <- "bar"
-                rv$plotlyMode <- "markers" 
-            } else if (input$plotlyType == "Area") {
-                rv$plotlyType <- "scatter"
-                rv$plotlyMode <- "markers" 
-                rv$plotlyFill <- "tozeroy"
-            } 
         }       
     })
     
+    #Available names for Axises
+    observeEvent(rv$userTable, {
+        rv$AvailableCols <- character(0)
+        ColClass <- sapply(rv$userTable, class)
+        for(i in 1:length(ColClass)){
+            if(ColClass[i] == "numeric" || ColClass[i] == "factor" || ColClass[i] == "integer"){
+                rv$AvailableCols <- c(rv$AvailableCols, names(ColClass[i]))
+            }
+            rv$AvailableCols
+        }
+    })
     
+    
+    typesDF <- reactive({
+        DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
+                        UseColumn = rep(TRUE, times = length(rv$userTable)),
+                        NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
+                        stringsAsFactors = FALSE)
+        DF1$Type = factor(DF1$Type, dataTypes)
+        DF1$UseColumn = factor(DF1$UseColumn, c(TRUE, FALSE))
+        DF2 = data.frame(Type = cbind(lapply(rv$user_table_init, class)),
+                         UseColumn = rep(TRUE, times = length(rv$user_table_init)),
+                         NAs = sapply(rv$user_table_init, function(y) sum(is.na(y))),
+                         stringsAsFactors = FALSE)
+        DF2$Type = factor(DF2$Type, dataTypes)
+        DF2$UseColumn = factor(DF2$UseColumn, c(TRUE, FALSE))
+        merge(DF2,DF1, all.x = TRUE)
+    })
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
         DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
@@ -212,21 +219,24 @@ function(input, output) {
     
     plotlygraph <- renderPlotly({
         validate(
-            need(input$plotlyButton >= 1, message = FALSE),
+            need(input$graphButton >= 1, message = FALSE),
             errorClass = "plotly_err"
         )
         plot_ly(rv$userTable,
                 type = rv$plotlyType,
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
-                color = rv$graphColor,
-                fill = rv$plotlyFill)
+                color = rv$graphColor)
 
         
     })
+
+   
+    
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
+    
 }

@@ -7,5 +7,6 @@ library(shinymaterial)
 library(DT)
 library(data.table)
 library(rhandsontable)
-library(shinyjs)
 library(highcharter)
+
+library(datasets)

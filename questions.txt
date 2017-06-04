@@ -2,22 +2,24 @@ done:
 plotly
 
 to do:
-# modal if NAs are in table
-! bug: rhandson deletes not used rows from user table, which it should not
-!urgent Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
-
+вивч ієрарх. кластир, kamins
+highchart delete
+only scatter
+Y only numeric
+highcharter color support
+! bug: rhandson deletes not used cols from user table, which it should not
+! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
+rewrite convert.types(causes error if you delete up to 2 cols left and then get them back; probably will fix itself with delete-cols bug
 на графс табі нові контроли для графс
+? modal if NAs are in table
+
+
 bug: crash on 2 columns left
-dropdown:
-plotly 
-highcharts
+
 
 bug: upload bugged, multiple uploads
 
 questions:
-
-
-
 
 
 

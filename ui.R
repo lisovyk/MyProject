@@ -74,5 +74,4 @@ material_page(
             plotlyOutput("plotlyGraph")
         )
     )
-    
 )
