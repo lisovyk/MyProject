@@ -100,7 +100,43 @@ function(input, output) {
             )
         }
     })
-    
+    button_cluster <- renderUI({
+        if(!is.null(input$uploaded_file)) {
+            material_row(
+                material_column(
+                    width = 2,
+                    actionButton(
+                        inputId = "clusterButton",
+                        label = "Perform clustering",
+                        depth = 0
+                    ),
+                    selectInput(
+                        inputId = "cluster_type",
+                        label = "Cluster Type",
+                        choices = c("asd","dsa"),
+                        multiple = FALSE
+                    )
+                ),
+                material_column(
+                    width = 2,
+                    material_slider(
+                        input_id = "cluster_itermax",
+                        label = "Max iterations",
+                        min_value = 1,
+                        max_value = 1000,
+                        initial_value = 100
+                    ),
+                    material_slider(
+                        input_id = "cluster_nstart",
+                        label = "Nstart",
+                        min_value = 1,
+                        max_value = 100,
+                        initial_value = 10
+                    )
+                )
+            )
+        }
+    })
 
     #buttons events
     observeEvent(c(input$button_table_convertion), {
@@ -230,9 +266,11 @@ function(input, output) {
                 type = rv$plotlyType,
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
-                color = rv$graphColor)
-
-        
+                color = rv$graphColor) %>%
+            layout(title = "Your graph",
+                   xaxis = list(title = rv$ColnameX),
+                   yaxis = list(title = rv$ColnameY)
+                   )
     })
 
    
@@ -242,5 +280,5 @@ function(input, output) {
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
-    
+    output$cluster_buttons <- button_cluster
 }
