@@ -92,7 +92,7 @@ function(input, output) {
                     selectInput(
                         inputId = "plotlyColor",
                         label = "Coloring",
-                        choices = c("Standart", colnames(rv$userTable)),
+                        choices = rv$AvailableColoring,
                         selected = c("Standart"),
                         multiple = FALSE
                     )
@@ -149,16 +149,20 @@ function(input, output) {
         }       
     })
     
-    #Available names for Axises
+    #Available names and colors on dropdowns
     observeEvent(rv$userTable, {
         rv$AvailableCols <- character(0)
+        rv$AvailableColoring <- character(0)
         ColClass <- sapply(rv$userTable, class)
-        for(i in 1:length(ColClass)){
-            if(ColClass[i] == "numeric" || ColClass[i] == "factor" || ColClass[i] == "integer"){
+        for(i in 1:length(ColClass)) {
+            if(ColClass[i] == "numeric" || ColClass[i] == "integer"){
                 rv$AvailableCols <- c(rv$AvailableCols, names(ColClass[i]))
             }
-            rv$AvailableCols
+            if(ColClass[i] != "character") {
+                rv$AvailableColoring <- c(rv$AvailableColoring, names(ColClass[i]))
+            }
         }
+
     })
     
     

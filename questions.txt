@@ -1,26 +1,38 @@
 done: 
-plotly
-
-to do:
-вивч ієрарх. кластир, kamins
+Y only numeric
 highchart delete
 only scatter
-Y only numeric
-highcharter color support
-! bug: rhandson deletes not used cols from user table, which it should not
-! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
 rewrite convert.types(causes error if you delete up to 2 cols left and then get them back; probably will fix itself with delete-cols bug
-на графс табі нові контроли для графс
-? modal if NAs are in table
-
-
+! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
+bug: upload bugged, multiple uploads
 bug: crash on 2 columns left
 
+to do:
+message under apply, chy vse ok
+назва осей в 2 табі
+collapsePanel по назві таби
+вивч ієрарх. кластир
+kmeans
+! bug: rhandson deletes not used cols from user table, which it should not
 
-bug: upload bugged, multiple uploads
+назвати на графі Axises
+на графс табі нові контроли для графс
+Within cluster sum of squares by total руками порахувати
+наступна таба: вибрати алгоритми кластерізації
+kmeans з 3 аргументами
+itermax nstart, button run clasterting
+після нажаття 1) малювати кластера
+              2) PSA 
+			  
+барплот з к-тю елементів в кластерах
+дататейбл тільки нумерік і інтежер
+
+
+
 
 questions:
-
+? modal if NAs are in table
+? if logical in color, nothing happens
 
 
 "$('a.active').attr('href') == '#second_tab'")
