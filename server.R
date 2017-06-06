@@ -233,19 +233,16 @@ function(input, output) {
     
     typesDF <- reactive({
         DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
-                        UseColumn = rep(TRUE, times = length(rv$userTable)),
-                        NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
-                        stringsAsFactors = FALSE)
+                         UseColumn = rep(TRUE, times = length(rv$userTable)),
+                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
+                         stringsAsFactors = FALSE)
         DF1$Type = factor(DF1$Type, dataTypes)
         DF1$UseColumn = factor(DF1$UseColumn, c(TRUE, FALSE))
-        DF2 = data.frame(Type = cbind(lapply(rv$user_table_init, class)),
-                         UseColumn = rep(TRUE, times = length(rv$user_table_init)),
-                         NAs = sapply(rv$user_table_init, function(y) sum(is.na(y))),
+        DF2 = data.frame(Names = colnames(rv$user_table_init),
                          stringsAsFactors = FALSE)
-        DF2$Type = factor(DF2$Type, dataTypes)
-        DF2$UseColumn = factor(DF2$UseColumn, c(TRUE, FALSE))
-        rv$AllTypes <- left_join(DF2,DF1)
-        rownames(rv$AllTypes) <- colnames(rv$user_table_init)
+        rv$AllTypes <- merge(DF2,DF1, by.x = "Names", by.y = 0, all.x = TRUE)
+        rownames(rv$AllTypes) <- rv$AllTypes[,1]
+        rv$AllTypes <- rv$AllTypes[,2:ncol(rv$AllTypes)]
     })
     
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
@@ -322,7 +319,7 @@ function(input, output) {
             need(input$clusterButton >= 1, message = FALSE),
             errorClass = "cluster_barplot_err"
         )
-        plot_ly(rv$clusterTable,
+        plot_ly(rv$clusterBar,
                 type = "bar",
                 x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
                 y = rv$clusterBar[,"Cluster size"],

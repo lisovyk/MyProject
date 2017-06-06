@@ -1,4 +1,4 @@
-done: 
+﻿done: 
 назва осей в 2 табі
 вивч ієрарх. кластир
 kmeans
@@ -9,6 +9,8 @@ itermax nstart, button run clasterting
 після нажаття 1) малювати кластера
 
 to do:
+bsCollapse
+на 3 табу табличку + колонка з номером кластера
 message under apply, is everything ok or not
 
 ? реалізація collapsePanel по назві таби
@@ -21,31 +23,7 @@ Within cluster sum of squares by total руками порахувати
 
 
 questions:
-!може переписати без materialshiny? 
 S3 / S4 classes
-vizualisation of clusters
-merge / *_join return no row names
-
-Browse[2]> DF2
-               Type UseColumn  NAs
-"Date"    character      TRUE    0
-"sulfate"   numeric      TRUE 1948
-"nitrate"   numeric      TRUE 1942
-"ID"        integer      TRUE    0
-Browse[2]> DF1
-             Type UseColumn NAs
-"Date"    numeric      TRUE   0
-"sulfate" numeric      TRUE   0
-"nitrate" integer      TRUE   0
-"ID"      integer      TRUE   0
-Browse[2]> left_join(DF2,DF1)
-Joining, by = c("Type", "UseColumn", "NAs")
-       Type UseColumn  NAs
-1 character      TRUE    0
-2   numeric      TRUE 1948
-3   numeric      TRUE 1942
-4   integer      TRUE    0
-5   integer      TRUE    0
 
 
 "$('a.active').attr('href') == '#second_tab'")
