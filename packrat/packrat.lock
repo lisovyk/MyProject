@@ -159,11 +159,6 @@ Requires: assertthat, broom, dplyr, htmltools, htmlwidgets, igraph,
     jsonlite, lubridate, magrittr, purrr, quantmod, rlist, stringr,
     tibble, tidyr, xts, zoo
 
-Package: hms
-Source: CRAN
-Version: 0.3
-Hash: 3fca8a1c97e6cfb297fe3f4690f82c58
-
 Package: htmltools
 Source: CRAN
 Version: 0.3.6
@@ -299,12 +294,6 @@ Source: CRAN
 Version: 0.4-9
 Hash: 3bf93a6e4bf1de0a8b2ad2b2c53c861a
 Requires: TTR, curl, xts, zoo
-
-Package: readr
-Source: CRAN
-Version: 1.1.1
-Hash: 8261195998ee028e8ee5acaa77e1db87
-Requires: BH, R6, Rcpp, hms, tibble
 
 Package: registry
 Source: CRAN

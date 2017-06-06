@@ -1,38 +1,51 @@
 done: 
-Y only numeric
-highchart delete
-only scatter
-rewrite convert.types(causes error if you delete up to 2 cols left and then get them back; probably will fix itself with delete-cols bug
-! Last column not coercing to numeric if only one numeric is in it [e.g. svg's in specdata]
-bug: upload bugged, multiple uploads
-bug: crash on 2 columns left
-
-to do:
-message under apply, chy vse ok
 назва осей в 2 табі
-collapsePanel по назві таби
 вивч ієрарх. кластир
 kmeans
-! bug: rhandson deletes not used cols from user table, which it should not
-
-назвати на графі Axises
-на графс табі нові контроли для графс
-Within cluster sum of squares by total руками порахувати
-наступна таба: вибрати алгоритми кластерізації
+барплот з к-тю елементів в кластерах
+дататейбл тільки нумерік і інтежер
 kmeans з 3 аргументами
 itermax nstart, button run clasterting
 після нажаття 1) малювати кластера
-              2) PSA 
-			  
-барплот з к-тю елементів в кластерах
-дататейбл тільки нумерік і інтежер
 
+to do:
+message under apply, is everything ok or not
 
+? реалізація collapsePanel по назві таби
+
+! bug: rhandson deletes not used cols from user table, which it should not
+
+на графс табі нові контроли для графс
+Within cluster sum of squares by total руками порахувати
+вибір алгоритми кластерізації
 
 
 questions:
-? modal if NAs are in table
-? if logical in color, nothing happens
+!може переписати без materialshiny? 
+S3 / S4 classes
+vizualisation of clusters
+merge / *_join return no row names
+
+Browse[2]> DF2
+               Type UseColumn  NAs
+"Date"    character      TRUE    0
+"sulfate"   numeric      TRUE 1948
+"nitrate"   numeric      TRUE 1942
+"ID"        integer      TRUE    0
+Browse[2]> DF1
+             Type UseColumn NAs
+"Date"    numeric      TRUE   0
+"sulfate" numeric      TRUE   0
+"nitrate" integer      TRUE   0
+"ID"      integer      TRUE   0
+Browse[2]> left_join(DF2,DF1)
+Joining, by = c("Type", "UseColumn", "NAs")
+       Type UseColumn  NAs
+1 character      TRUE    0
+2   numeric      TRUE 1948
+3   numeric      TRUE 1942
+4   integer      TRUE    0
+5   integer      TRUE    0
 
 
 "$('a.active').attr('href') == '#second_tab'")

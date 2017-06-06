@@ -77,6 +77,12 @@ material_page(
     ),
     material_tab_content(
         tab_id = "clustering_tab",
-        uiOutput("cluster_buttons")
+        material_row(
+            uiOutput("cluster_buttons")
+        ),
+        material_row(
+            plotlyOutput("clusterTable"),
+            plotlyOutput("clusterBarplot")
+        )
     )
 )
