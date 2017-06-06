@@ -92,7 +92,7 @@ function(input, output) {
                     selectInput(
                         inputId = "plotlyColor",
                         label = "Coloring",
-                        choices = c("Standart", colnames(rv$userTable)),
+                        choices = rv$AvailableColoring,
                         selected = c("Standart"),
                         multiple = FALSE
                     )
@@ -100,7 +100,52 @@ function(input, output) {
             )
         }
     })
-    
+    button_cluster <- renderUI({
+        if(!is.null(input$uploaded_file)) {
+            material_row(
+                material_column(
+                    width = 2,
+                    actionButton(
+                        inputId = "clusterButton",
+                        label = "Perform"
+                    ),
+                    selectInput(
+                        inputId = "cluster_alg",
+                        label = "Clustering algorithm",
+                        choices = c("asd","dsa"),
+                        multiple = FALSE
+                    )
+                ),
+                material_column(
+                    width = 2,
+                    sliderInput(
+                        inputId = "cluster_itermax",
+                        label = "Max iterations",
+                        min = 1,
+                        max = 1000,
+                        value = 100
+                    ),
+                    sliderInput(
+                        inputId = "cluster_nstart",
+                        label = "Nstart",
+                        min = 1,
+                        max = 100,
+                        value = 10
+                    )
+                ),
+                material_column(
+                    width = 2,
+                    numericInput(
+                        inputId = "cluster_number",
+                        label = "N clusters",
+                        min = 2,
+                        max = nrow(rv$userTable),
+                        value = 2
+                    )
+                )
+            )
+        }
+    })
 
     #buttons events
     observeEvent(c(input$button_table_convertion), {
@@ -130,6 +175,7 @@ function(input, output) {
                     user_input <- user_input[!(rownames(user_input) %in% drops), ]
                     rv$userTable <- rv$userTable[ , rownames(user_input)]
                 }
+                typesDF()
         }
     })
     
@@ -146,19 +192,42 @@ function(input, output) {
                 } else if (class(rv$userTable[, input$plotlyColor]) == "factor")
                     rv$graphColor <- rv$userTable[, input$plotlyColor]
             }
-        }       
+        }
     })
     
-    #Available names for Axises
+    observeEvent(c(input$clusterButton), {
+        if(input$clusterButton >= 1) {
+            rv$clusterTable <- rv$userTable[sapply(rv$userTable, is.numeric)]
+            rv$tableCluster <- kmeans(rv$clusterTable,
+                                      centers = input$cluster_number,
+                                      nstart = input$cluster_nstart,
+                                      iter.max = input$cluster_itermax)
+            rv$tableCluster$cluster <- as.factor(rv$tableCluster$cluster)
+            
+            rv$clusterBar <- data.frame(1:length(rv$tableCluster$size))
+            for(i in 1:length(rv$tableCluster$size)) {
+                rv$clusterBar[i,2] <- rv$tableCluster$size[i]
+            }
+            colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
+        }
+        print(rv$clusterBar)
+        
+    })
+    
+    #Available names and colors on dropdowns
     observeEvent(rv$userTable, {
         rv$AvailableCols <- character(0)
+        rv$AvailableColoring <- character(0)
         ColClass <- sapply(rv$userTable, class)
-        for(i in 1:length(ColClass)){
-            if(ColClass[i] == "numeric" || ColClass[i] == "factor" || ColClass[i] == "integer"){
+        for(i in 1:length(ColClass)) {
+            if(ColClass[i] == "numeric" || ColClass[i] == "integer"){
                 rv$AvailableCols <- c(rv$AvailableCols, names(ColClass[i]))
             }
-            rv$AvailableCols
+            if(ColClass[i] != "character") {
+                rv$AvailableColoring <- c(rv$AvailableColoring, names(ColClass[i]))
+            }
         }
+
     })
     
     
@@ -175,8 +244,10 @@ function(input, output) {
                          stringsAsFactors = FALSE)
         DF2$Type = factor(DF2$Type, dataTypes)
         DF2$UseColumn = factor(DF2$UseColumn, c(TRUE, FALSE))
-        merge(DF2,DF1, all.x = TRUE)
+        rv$AllTypes <- left_join(DF2,DF1)
+        rownames(rv$AllTypes) <- colnames(rv$user_table_init)
     })
+    
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
         DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
@@ -217,6 +288,8 @@ function(input, output) {
         )
     })
     
+
+    
     plotlygraph <- renderPlotly({
         validate(
             need(input$graphButton >= 1, message = FALSE),
@@ -226,17 +299,48 @@ function(input, output) {
                 type = rv$plotlyType,
                 x = rv$userTable[, rv$ColnameX],
                 y = rv$userTable[, rv$ColnameY],
-                color = rv$graphColor)
-
-        
+                color = rv$graphColor) %>%
+            layout(title = "Your graph",
+                   xaxis = list(title = rv$ColnameX),
+                   yaxis = list(title = rv$ColnameY)
+                   )
+    })
+    cluster_table <- renderPlotly({
+        validate(
+            need(input$clusterButton >= 1, message = FALSE),
+            errorClass = "cluster_err"
+        )
+        plot_ly(rv$clusterTable,
+                type = "scatter",
+                x = rv$clusterTable[, 1],
+                y = rv$clusterTable[, 2],
+                color = rv$tableCluster$cluster) %>%
+            layout(title = "Cluster graph")
+    })
+    cluster_barplot <- renderPlotly({
+        validate(
+            need(input$clusterButton >= 1, message = FALSE),
+            errorClass = "cluster_barplot_err"
+        )
+        plot_ly(rv$clusterTable,
+                type = "bar",
+                x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
+                y = rv$clusterBar[,"Cluster size"],
+                color = as.factor(rv$tableCluster$size)) %>%
+            layout(title = "Number of items in each cluster",
+                   xaxis = list(title = "Cluster no."),
+                   yaxis = list(title = "Cluster size")
+            )
     })
 
    
     
+    output$cluster_buttons <- button_cluster
+    output$clusterTable <- cluster_table
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
-    
+    output$clusterBarplot <- cluster_barplot
 }

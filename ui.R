@@ -54,8 +54,9 @@ material_page(
     ),
     material_tabs(
         tabs = c(
-            "Upload tab" = "first_tab",
-            "Graphs tab" = "second_tab"
+            "Upload" = "first_tab",
+            "Graphs" = "second_tab",
+            "Clustering" = "clustering_tab"
         )
     ),
     material_tab_content(
@@ -72,6 +73,16 @@ material_page(
         ),
         material_row(
             plotlyOutput("plotlyGraph")
+        )
+    ),
+    material_tab_content(
+        tab_id = "clustering_tab",
+        material_row(
+            uiOutput("cluster_buttons")
+        ),
+        material_row(
+            plotlyOutput("clusterTable"),
+            plotlyOutput("clusterBarplot")
         )
     )
 )

@@ -8,5 +8,6 @@ library(DT)
 library(data.table)
 library(rhandsontable)
 library(highcharter)
+library(dplyr)
 
 library(datasets)
