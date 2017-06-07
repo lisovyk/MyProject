@@ -9,5 +9,7 @@ library(data.table)
 library(rhandsontable)
 library(highcharter)
 library(dplyr)
+library(shinyBS)
+library(shinyjs)
 
 library(datasets)

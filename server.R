@@ -21,7 +21,7 @@ function(input, output) {
     #functions
     convert.types <- function(obj, types){
         for(i in 1:nrow(types)){
-            if( class(obj[,i]) != types[i, 1]) {
+            if(class(obj[,i]) != types[i, 1]) {
                 func <- switch(types[i, 1],
                                integer = as.integer,
                                numeric = as.numeric,
@@ -57,7 +57,8 @@ function(input, output) {
                     label = "Delete selected rows",
                     initial_value = TRUE
                 ),
-                rHandsontableOutput("handsontypes")
+                rHandsontableOutput("handsontypes"),
+                uiOutput("text_caution")
             )
     })
     button_graph <- renderUI({
@@ -175,7 +176,6 @@ function(input, output) {
                     user_input <- user_input[!(rownames(user_input) %in% drops), ]
                     rv$userTable <- rv$userTable[ , rownames(user_input)]
                 }
-                typesDF()
         }
     })
     
@@ -231,29 +231,24 @@ function(input, output) {
     })
     
     
-    typesDF <- reactive({
-        DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
-                        UseColumn = rep(TRUE, times = length(rv$userTable)),
-                        NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
-                        stringsAsFactors = FALSE)
-        DF1$Type = factor(DF1$Type, dataTypes)
-        DF1$UseColumn = factor(DF1$UseColumn, c(TRUE, FALSE))
-        DF2 = data.frame(Type = cbind(lapply(rv$user_table_init, class)),
-                         UseColumn = rep(TRUE, times = length(rv$user_table_init)),
-                         NAs = sapply(rv$user_table_init, function(y) sum(is.na(y))),
-                         stringsAsFactors = FALSE)
-        DF2$Type = factor(DF2$Type, dataTypes)
-        DF2$UseColumn = factor(DF2$UseColumn, c(TRUE, FALSE))
-        rv$AllTypes <- left_join(DF2,DF1)
-        rownames(rv$AllTypes) <- colnames(rv$user_table_init)
-    })
-    
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
         DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
                         UseColumn = rep(TRUE, times = length(rv$userTable)),
                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
                         stringsAsFactors = FALSE)
+        if(!is.null(input$handsontypes)) {
+            DF <- merge(hot_to_r(input$handsontypes),
+                        DF,
+                        by.x = "Type",
+                        by.y = 0,
+                        all.x = TRUE,
+                        suffixes = c("", ""))[,1:ncol(DF)]
+            rownames(DF) <- rownames(hot_to_r(input$handsontypes))
+            DF$Type <- hot_to_r(input$handsontypes)[,"Type"]
+            DF$UseColumn <- hot_to_r(input$handsontypes)[,"UseColumn"]
+            DF$NAs <- hot_to_r(input$handsontypes)[,"NAs"]
+        }
         DF$Type = factor(DF$Type, dataTypes)
         DF$UseColumn = factor(DF$UseColumn, c(TRUE, FALSE))
         rhandsontable(DF, selectCallback = TRUE, readOnly = FALSE) %>%
@@ -287,6 +282,35 @@ function(input, output) {
                                     ")")
         )
     })
+    
+    cluster_user_table <- DT::renderDataTable({
+        validate(
+            need(!is.null(rv$tableCluster), message = FALSE),
+            errorClass = "main_table data"
+        )
+        dt <- rv$userTable
+        dt["Cluster"] <- rv$tableCluster$cluster
+        datatable(dt,
+                  selection = list(target = 'row'),
+                  options = list(
+                      autoWidth = FALSE,
+                      align = 'center',
+                      sDom = '<"top">rt<"bottom">ip',
+                      scrollX = TRUE,
+                      info = TRUE,
+                      paging = TRUE,
+                      oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
+                      ordering = T,
+                      pageLength = 10
+                  ),
+                  filter = "top",
+                  colnames = paste0(colnames(dt),
+                                    " (",
+                                    cbind(lapply(dt, class)),
+                                    ")")
+        )
+    })
+    
     
 
     
@@ -322,7 +346,7 @@ function(input, output) {
             need(input$clusterButton >= 1, message = FALSE),
             errorClass = "cluster_barplot_err"
         )
-        plot_ly(rv$clusterTable,
+        plot_ly(rv$clusterBar,
                 type = "bar",
                 x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
                 y = rv$clusterBar[,"Cluster size"],
@@ -335,12 +359,32 @@ function(input, output) {
 
    
     
+    output$text_caution <- renderUI({
+        removeClass(id = "text_caution", class = "greentext")
+        removeClass(id = "text_caution", class = "redtext")
+
+        output <- paste("Everything is OK!")
+        if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
+            output <- paste("Careful! You have NA values in dataset.")
+            toggleClass(id = "text_caution", class = "redtext")
+        }
+        if(output == paste("Everything is OK!")) {
+            toggleClass(id = "text_caution", class = "greentext")
+        }
+        tags$i(output)
+        
+    })
+        
+        
+        
+        
     output$cluster_buttons <- button_cluster
+    output$clusterBarplot <- cluster_barplot
     output$clusterTable <- cluster_table
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
-    output$clusterBarplot <- cluster_barplot
+    output$clusterUserTable <- cluster_user_table
 }

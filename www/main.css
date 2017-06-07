@@ -3,6 +3,14 @@
     --main-accent-color: #1E88E5;
     --main-dark: #5a5a5a;
 }
+
+#text_caution.redtext > i {
+    color: red;
+}
+#text_caution.greentext > i{
+    color: green;
+}
+
 nav {
     background-color: var(--main-color);
 }
