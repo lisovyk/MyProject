@@ -21,7 +21,7 @@ function(input, output) {
     #functions
     convert.types <- function(obj, types){
         for(i in 1:nrow(types)){
-            if( class(obj[,i]) != types[i, 1]) {
+            if(class(obj[,i]) != types[i, 1]) {
                 func <- switch(types[i, 1],
                                integer = as.integer,
                                numeric = as.numeric,
@@ -175,7 +175,6 @@ function(input, output) {
                     user_input <- user_input[!(rownames(user_input) %in% drops), ]
                     rv$userTable <- rv$userTable[ , rownames(user_input)]
                 }
-                typesDF()
         }
     })
     
@@ -231,19 +230,8 @@ function(input, output) {
     })
     
     
-    typesDF <- reactive({
-        DF1 = data.frame(Type = cbind(lapply(rv$userTable, class)),
-                         UseColumn = rep(TRUE, times = length(rv$userTable)),
-                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
-                         stringsAsFactors = FALSE)
-        DF1$Type = factor(DF1$Type, dataTypes)
-        DF1$UseColumn = factor(DF1$UseColumn, c(TRUE, FALSE))
-        DF2 = data.frame(Names = colnames(rv$user_table_init),
-                         stringsAsFactors = FALSE)
-        rv$AllTypes <- merge(DF2,DF1, by.x = "Names", by.y = 0, all.x = TRUE)
-        rownames(rv$AllTypes) <- rv$AllTypes[,1]
-        rv$AllTypes <- rv$AllTypes[,2:ncol(rv$AllTypes)]
-    })
+
+    
     
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
@@ -251,6 +239,18 @@ function(input, output) {
                         UseColumn = rep(TRUE, times = length(rv$userTable)),
                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
                         stringsAsFactors = FALSE)
+        if(!is.null(input$handsontypes)) {
+            DF <- merge(hot_to_r(input$handsontypes),
+                        DF,
+                        by.x = "Type",
+                        by.y = 0,
+                        all.x = TRUE,
+                        suffixes = c("", ""))[,1:ncol(DF)]
+            rownames(DF) <- rownames(hot_to_r(input$handsontypes))
+            DF$Type <- hot_to_r(input$handsontypes)[,"Type"]
+            DF$UseColumn <- hot_to_r(input$handsontypes)[,"UseColumn"]
+            DF$NAs <- hot_to_r(input$handsontypes)[,"NAs"]
+        }
         DF$Type = factor(DF$Type, dataTypes)
         DF$UseColumn = factor(DF$UseColumn, c(TRUE, FALSE))
         rhandsontable(DF, selectCallback = TRUE, readOnly = FALSE) %>%
@@ -333,11 +333,11 @@ function(input, output) {
    
     
     output$cluster_buttons <- button_cluster
+    output$clusterBarplot <- cluster_barplot
     output$clusterTable <- cluster_table
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
-    output$clusterBarplot <- cluster_barplot
 }
