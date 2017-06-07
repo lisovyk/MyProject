@@ -1,4 +1,5 @@
 material_page(
+    useShinyjs(),
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
     ),
@@ -80,7 +81,8 @@ material_page(
         uiOutput("cluster_buttons"),
         material_row(
             plotlyOutput("clusterTable"),
-            plotlyOutput("clusterBarplot")
+            plotlyOutput("clusterBarplot"),
+            DT::dataTableOutput("clusterUserTable")
         )
     )
 )

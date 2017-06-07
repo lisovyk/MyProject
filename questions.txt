@@ -1,21 +1,11 @@
 ﻿done: 
-назва осей в 2 табі
-вивч ієрарх. кластир
-kmeans
-барплот з к-тю елементів в кластерах
-дататейбл тільки нумерік і інтежер
-kmeans з 3 аргументами
-itermax nstart, button run clasterting
-після нажаття 1) малювати кластера
-
+message under apply, is everything ok or not
+! bug: rhandson deletes not used cols from user table, which it should not
+на 3 табу табличку + колонка з номером кластера
 to do:
 bsCollapse
-на 3 табу табличку + колонка з номером кластера
-message under apply, is everything ok or not
 
 ? реалізація collapsePanel по назві таби
-
-! bug: rhandson deletes not used cols from user table, which it should not
 
 на графс табі нові контроли для графс
 Within cluster sum of squares by total руками порахувати
@@ -23,7 +13,8 @@ Within cluster sum of squares by total руками порахувати
 
 
 questions:
-S3 / S4 classes
 
+selfedu: 
+learnS3 / S4 classes
 
 "$('a.active').attr('href') == '#second_tab'")

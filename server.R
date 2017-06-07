@@ -57,7 +57,8 @@ function(input, output) {
                     label = "Delete selected rows",
                     initial_value = TRUE
                 ),
-                rHandsontableOutput("handsontypes")
+                rHandsontableOutput("handsontypes"),
+                uiOutput("text_caution")
             )
     })
     button_graph <- renderUI({
@@ -230,9 +231,6 @@ function(input, output) {
     })
     
     
-
-    
-    
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
         DF = data.frame(Type = cbind(lapply(rv$userTable, class)),
@@ -285,6 +283,35 @@ function(input, output) {
         )
     })
     
+    cluster_user_table <- DT::renderDataTable({
+        validate(
+            need(!is.null(rv$tableCluster), message = FALSE),
+            errorClass = "main_table data"
+        )
+        dt <- rv$userTable
+        dt["Cluster"] <- rv$tableCluster$cluster
+        datatable(dt,
+                  selection = list(target = 'row'),
+                  options = list(
+                      autoWidth = FALSE,
+                      align = 'center',
+                      sDom = '<"top">rt<"bottom">ip',
+                      scrollX = TRUE,
+                      info = TRUE,
+                      paging = TRUE,
+                      oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
+                      ordering = T,
+                      pageLength = 10
+                  ),
+                  filter = "top",
+                  colnames = paste0(colnames(dt),
+                                    " (",
+                                    cbind(lapply(dt, class)),
+                                    ")")
+        )
+    })
+    
+    
 
     
     plotlygraph <- renderPlotly({
@@ -332,6 +359,25 @@ function(input, output) {
 
    
     
+    output$text_caution <- renderUI({
+        removeClass(id = "text_caution", class = "greentext")
+        removeClass(id = "text_caution", class = "redtext")
+
+        output <- paste("Everything is OK!")
+        if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
+            output <- paste("Careful! You have NA values in dataset.")
+            toggleClass(id = "text_caution", class = "redtext")
+        }
+        if(output == paste("Everything is OK!")) {
+            toggleClass(id = "text_caution", class = "greentext")
+        }
+        tags$i(output)
+        
+    })
+        
+        
+        
+        
     output$cluster_buttons <- button_cluster
     output$clusterBarplot <- cluster_barplot
     output$clusterTable <- cluster_table
@@ -340,4 +386,5 @@ function(input, output) {
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$plotlyGraph <- plotlygraph
+    output$clusterUserTable <- cluster_user_table
 }
