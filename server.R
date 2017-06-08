@@ -18,6 +18,7 @@ function(input, output) {
         rv$user_table_init <- user_table()
         rv$userTable <- user_table()
     })
+
     #functions
     convert.types <- function(obj, types){
         for(i in 1:nrow(types)){
@@ -96,7 +97,6 @@ function(input, output) {
     button_cluster <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
-                material_row(
                     tags$div( 
                         title = "In order to perform clustering, there should be no NA values in your data frame",
                         actionButton(
@@ -104,10 +104,24 @@ function(input, output) {
                             label = "Perform"
                         )
                     ),
+                    material_row(
+                        selectInput(
+                            inputId = "cluster_x",
+                            label = "X output",
+                            choices = colnames(rv$clusterTable),
+                            multiple = FALSE
+                        ), 
+                        selectInput(
+                            inputId = "cluster_y",
+                            label = "Y output",
+                            choices = colnames(rv$clusterTable),
+                            multiple = FALSE
+                        )
+                    ),
                     selectInput(
                         inputId = "cluster_alg",
                         label = "Clustering algorithm",
-                        choices = c("asd","dsa"),
+                        choices = c("K-means","Nope, only k-means"),
                         multiple = FALSE
                     ),
                     sliderInput(
@@ -131,8 +145,7 @@ function(input, output) {
                         max = nrow(rv$userTable), #bugged: user can manually write a number > max
                         value = 2
                     )
-                    
-                )
+
             )
         }
     })
@@ -183,10 +196,12 @@ function(input, output) {
             }
         }
     })
-    
+
+    observeEvent(rv$userTable, {
+        rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
+    })
     observeEvent(c(input$clusterButton), {
         if(input$clusterButton >= 1) {
-            rv$clusterTable <- rv$userTable[sapply(rv$userTable, is.numeric)]
             rv$tableCluster <- kmeans(rv$clusterTable,
                                       centers = input$cluster_number,
                                       nstart = input$cluster_nstart,
@@ -273,7 +288,7 @@ function(input, output) {
             need(!is.null(rv$tableCluster), message = FALSE),
             errorClass = "main_table data"
         )
-        dt <- rv$userTable
+        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
         dt["Cluster"] <- rv$tableCluster$cluster
         datatable(dt,
                   selection = list(target = 'row'),
@@ -317,12 +332,16 @@ function(input, output) {
             need(input$clusterButton >= 1, message = FALSE),
             errorClass = "cluster_err"
         )
-        plot_ly(rv$clusterTable,
+        dt <- rv$clusterTable
+        plot_ly(dt,
                 type = "scatter",
-                x = rv$clusterTable[, 1],
-                y = rv$clusterTable[, 2],
+                x = dt[, input$cluster_x],
+                y = dt[, input$cluster_y],
                 color = rv$tableCluster$cluster) %>%
-            layout(title = "Cluster graph")
+            layout(title = "Cluster graph",
+                   xaxis = list(title = input$cluster_x),
+                   yaxis = list(title = input$cluster_y)
+            )
     })
     cluster_barplot <- renderPlotly({
         validate(
@@ -332,8 +351,7 @@ function(input, output) {
         plot_ly(rv$clusterBar,
                 type = "bar",
                 x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
-                y = rv$clusterBar[,"Cluster size"],
-                color = as.factor(rv$tableCluster$size)) %>%
+                y = rv$clusterBar[,"Cluster size"]) %>%
             layout(title = "Number of items in each cluster",
                    xaxis = list(title = "Cluster no."),
                    yaxis = list(title = "Cluster size")

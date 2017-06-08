@@ -1,25 +1,17 @@
 ﻿done: 
-message under apply, is everything ok or not
-! bug: rhandson deletes not used cols from user table, which it should not
-на 3 табу табличку + колонка з номером кластера
-partially-done: disabling clustering on NAs
-
-bsCollapse is not working in shm
-conditionalPanel instead of bsCollapse: реалізація collapsePanel по назві таби
-to do:
-tomorrow: ієрархічна кластеризація
 cluster по всіх, а візуалізувати - вибрати з дропдауна. добавити xasix yasix назви
 upload button and controlls into first tab button
 3 tab table without characters
+
+to do:
+tomorrow: ієрархічна кластеризація
+
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластерізації
-
-Perform btn bugged with NAs
 
 
 questions:
 how to save values after changing the insides (e.g 2 tab input boxes)
-clusterButton disabling
 
 the use of AJAX in R
 selfedu: 
