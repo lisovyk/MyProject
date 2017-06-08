@@ -7,6 +7,10 @@ partially-done: disabling clustering on NAs
 bsCollapse is not working in shm
 conditionalPanel instead of bsCollapse: реалізація collapsePanel по назві таби
 to do:
+tomorrow: ієрархічна кластеризація
+cluster по всіх, а візуалізувати - вибрати з дропдауна. добавити xasix yasix назви
+upload button and controlls into first tab button
+3 tab table without characters
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластерізації
 

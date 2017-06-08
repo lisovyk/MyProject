@@ -36,57 +36,59 @@ function(input, output) {
 
     #buttons ui
     button_render <- renderUI({
-            material_card(
-                actionButton(
-                    inputId = "button_table_convertion",
-                    label = "Apply"
-                ),
-                material_checkbox(
-                    input_id = "remove_na",
-                    label = "Remove NA's",
-                    initial_value = TRUE
-                ),
-                material_checkbox(
-                    input_id = "remove_col",
-                    label = "Remove columns",
-                    initial_value = FALSE
-                ),
-                material_checkbox(
-                    input_id = "checkbox_delete_rows",
-                    label = "Delete selected rows",
-                    initial_value = TRUE
-                ),
-                rHandsontableOutput("handsontypes"),
-                uiOutput("text_caution")
-            )
+        material_card(
+            actionButton(
+                inputId = "button_table_convertion",
+                label = "Apply"
+            ),
+            material_checkbox(
+                input_id = "remove_na",
+                label = "Remove NA's",
+                initial_value = TRUE
+            ),
+            material_checkbox(
+                input_id = "remove_col",
+                label = "Remove columns",
+                initial_value = FALSE
+            ),
+            material_checkbox(
+                input_id = "checkbox_delete_rows",
+                label = "Delete selected rows",
+                initial_value = TRUE
+            ),
+            rHandsontableOutput("handsontypes"),
+            uiOutput("text_caution")
+        )
     })
     button_graph <- renderUI({
         if(!is.null(input$uploaded_file)){
-            material_row(
-                actionButton(
-                    inputId = "graphButton",
-                    label = "Make graph",
-                    depth = 0
-                ),
-                selectInput(
-                    inputId = "graph_x",
-                    label = "X axis",
-                    choices = rv$AvailableCols,
-                    multiple = FALSE
-                ),
-                selectInput(
-                    inputId = "graph_y",
-                    label = "Y axis",
-                    choices = rv$AvailableCols,
-                    selected = c("c"),
-                    multiple = FALSE
-                ),
-                selectInput(
-                    inputId = "plotlyColor",
-                    label = "Coloring",
-                    choices = rv$AvailableColoring,
-                    selected = c("Standart"),
-                    multiple = FALSE
+            material_card(
+                material_row(
+                    actionButton(
+                        inputId = "graphButton",
+                        label = "Make graph",
+                        depth = 0
+                    ),
+                    selectInput(
+                        inputId = "graph_x",
+                        label = "X axis",
+                        choices = rv$AvailableCols,
+                        multiple = FALSE
+                    ),
+                    selectInput(
+                        inputId = "graph_y",
+                        label = "Y axis",
+                        choices = rv$AvailableCols,
+                        selected = c("c"),
+                        multiple = FALSE
+                    ),
+                    selectInput(
+                        inputId = "plotlyColor",
+                        label = "Coloring",
+                        choices = rv$AvailableColoring,
+                        selected = c("Standart"),
+                        multiple = FALSE
+                    )
                 )
             )
         }
@@ -341,7 +343,7 @@ function(input, output) {
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
-
+        
         output <- paste("Everything is OK!")
         if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
             output <- paste("Careful! You have NA values in dataset.")
@@ -353,18 +355,16 @@ function(input, output) {
         tags$i(output)
         
     })
-   
-    
     
     observe({
-            if (!is.null(input$clusterButton)) {
-                # or if ("clusterButton" %in% names(input)) 
-                disable("clusterButton")
-                observeEvent(rv$userTable, {
-                    rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
-                    toggleState(id = "clusterButton", condition = !rv$anyNAs)
-                })
-            }
+        if (!is.null(input$clusterButton)) {
+            # or if ("clusterButton" %in% names(input))
+            disable("clusterButton")
+            observeEvent(rv$userTable, {
+                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
+                toggleState(id = "clusterButton", condition = !rv$anyNAs)
+            })
+        }
     })
 
     output$fileUploadedBool <- reactive({
@@ -372,7 +372,6 @@ function(input, output) {
     })
     outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
         
-
     output$cluster_buttons <- button_cluster
     output$clusterBarplot <- cluster_barplot
     output$clusterTable <- cluster_table
