@@ -11,10 +11,13 @@ Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластерізації
 
 Perform btn bugged with NAs
+
+
 questions:
 how to save values after changing the insides (e.g 2 tab input boxes)
 clusterButton disabling
 
+the use of AJAX in R
 selfedu: 
 learn S3 / S4 classes
 
