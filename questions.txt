@@ -2,19 +2,20 @@
 message under apply, is everything ok or not
 ! bug: rhandson deletes not used cols from user table, which it should not
 на 3 табу табличку + колонка з номером кластера
+partially-done: disabling clustering on NAs
+
+bsCollapse is not working in shm
+conditionalPanel instead of bsCollapse: реалізація collapsePanel по назві таби
 to do:
-bsCollapse
-
-? реалізація collapsePanel по назві таби
-
-на графс табі нові контроли для графс
 Within cluster sum of squares by total руками порахувати
-вибір алгоритми кластерізації
+? вибір алгоритми кластерізації
 
-
+Perform btn bugged with NAs
 questions:
+how to save values after changing the insides (e.g 2 tab input boxes)
+clusterButton disabling
 
 selfedu: 
-learnS3 / S4 classes
+learn S3 / S4 classes
 
 "$('a.active').attr('href') == '#second_tab'")

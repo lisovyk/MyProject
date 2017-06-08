@@ -51,7 +51,21 @@ material_page(
             )
         ),
         hr(),
-        uiOutput("render_button")
+        conditionalPanel(
+            condition = "output.fileUploadedBool",
+            conditionalPanel(
+                condition = "$('a.active').attr('href') == '#first_tab'",
+                uiOutput("render_button")
+            ),
+            conditionalPanel(
+                condition = "$('a.active').attr('href') == '#second_tab'",
+            uiOutput("graph_buttons")
+            ),
+            conditionalPanel(
+                condition = "$('a.active').attr('href') == '#clustering_tab'",
+                uiOutput("cluster_buttons")
+            )
+        )
     ),
     material_tabs(
         tabs = c(
@@ -70,19 +84,13 @@ material_page(
     material_tab_content(
         tab_id = "second_tab",
         material_row(
-            uiOutput("graph_buttons")
-        ),
-        material_row(
             plotlyOutput("plotlyGraph")
         )
     ),
     material_tab_content(
         tab_id = "clustering_tab",
-        uiOutput("cluster_buttons"),
-        material_row(
             plotlyOutput("clusterTable"),
             plotlyOutput("clusterBarplot"),
             DT::dataTableOutput("clusterUserTable")
-        )
     )
 )
