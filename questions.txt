@@ -1,10 +1,28 @@
 ﻿done: 
-cluster по всіх, а візуалізувати - вибрати з дропдауна. добавити xasix yasix назви
-upload button and controlls into first tab button
-3 tab table without characters
+
+
+Voronoi Treemap
+Voronoi Diagram and Delaunay Triangulation
 
 to do:
+ml datasets download datasets classification, covertype data set
+
+логістична регресія, decision tree, random forest
+тюнинг моделі
+точність моделі
+test and train of confusion matrix
+
+set of checkboxes on tab 4
+pca1/pca2 on 3 tab 
 tomorrow: ієрархічна кластеризація
+!practical machine learning    lib caret 
+getting and cleaning data
+!machine learning
+checkbox "apply normalization" on all numerics 3rd block under typetable
+4 tab - classification
+
+After: linear regression
+After: js libs into R
 
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластерізації
@@ -13,8 +31,6 @@ Within cluster sum of squares by total руками порахувати
 questions:
 how to save values after changing the insides (e.g 2 tab input boxes)
 
-the use of AJAX in R
+
 selfedu: 
 learn S3 / S4 classes
-
-"$('a.active').attr('href') == '#second_tab'")
