@@ -1,20 +1,36 @@
 ﻿done: 
-message under apply, is everything ok or not
-! bug: rhandson deletes not used cols from user table, which it should not
-на 3 табу табличку + колонка з номером кластера
+
+
+Voronoi Treemap
+Voronoi Diagram and Delaunay Triangulation
+
 to do:
-bsCollapse
+ml datasets download datasets classification, covertype data set
 
-? реалізація collapsePanel по назві таби
+логістична регресія, decision tree, random forest
+тюнинг моделі
+точність моделі
+test and train of confusion matrix
 
-на графс табі нові контроли для графс
+set of checkboxes on tab 4
+pca1/pca2 on 3 tab 
+tomorrow: ієрархічна кластеризація
+!practical machine learning    lib caret 
+getting and cleaning data
+!machine learning
+checkbox "apply normalization" on all numerics 3rd block under typetable
+4 tab - classification
+
+After: linear regression
+After: js libs into R
+
 Within cluster sum of squares by total руками порахувати
-вибір алгоритми кластерізації
+? вибір алгоритми кластерізації
 
 
 questions:
+how to save values after changing the insides (e.g 2 tab input boxes)
+
 
 selfedu: 
-learnS3 / S4 classes
-
-"$('a.active').attr('href') == '#second_tab'")
+learn S3 / S4 classes

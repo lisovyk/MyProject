@@ -18,6 +18,7 @@ function(input, output) {
         rv$user_table_init <- user_table()
         rv$userTable <- user_table()
     })
+
     #functions
     convert.types <- function(obj, types){
         for(i in 1:nrow(types)){
@@ -36,44 +37,39 @@ function(input, output) {
 
     #buttons ui
     button_render <- renderUI({
-        if(!is.null(input$uploaded_file))
-            material_card(
-                actionButton(
-                    inputId = "button_table_convertion",
-                    label = "Apply"
-                ),
-                material_checkbox(
-                    input_id = "remove_na",
-                    label = "Remove NA's",
-                    initial_value = TRUE
-                ),
-                material_checkbox(
-                    input_id = "remove_col",
-                    label = "Remove columns",
-                    initial_value = FALSE
-                ),
-                material_checkbox(
-                    input_id = "checkbox_delete_rows",
-                    label = "Delete selected rows",
-                    initial_value = TRUE
-                ),
-                rHandsontableOutput("handsontypes"),
-                uiOutput("text_caution")
-            )
+        material_card(
+            actionButton(
+                inputId = "button_table_convertion",
+                label = "Apply"
+            ),
+            material_checkbox(
+                input_id = "remove_na",
+                label = "Remove NA's",
+                initial_value = TRUE
+            ),
+            material_checkbox(
+                input_id = "remove_col",
+                label = "Remove columns",
+                initial_value = FALSE
+            ),
+            material_checkbox(
+                input_id = "checkbox_delete_rows",
+                label = "Delete selected rows",
+                initial_value = TRUE
+            ),
+            rHandsontableOutput("handsontypes"),
+            uiOutput("text_caution")
+        )
     })
     button_graph <- renderUI({
         if(!is.null(input$uploaded_file)){
-            material_row(
-                material_column(
-                    width = 2,
+            material_card(
+                material_row(
                     actionButton(
                         inputId = "graphButton",
                         label = "Make graph",
                         depth = 0
-                    )
-                ),
-                material_column(
-                    width = 2,
+                    ),
                     selectInput(
                         inputId = "graph_x",
                         label = "X axis",
@@ -86,10 +82,7 @@ function(input, output) {
                         choices = rv$AvailableCols,
                         selected = c("c"),
                         multiple = FALSE
-                    )
-                ),
-                material_column(
-                    width = 2,
+                    ),
                     selectInput(
                         inputId = "plotlyColor",
                         label = "Coloring",
@@ -103,22 +96,34 @@ function(input, output) {
     })
     button_cluster <- renderUI({
         if(!is.null(input$uploaded_file)) {
-            material_row(
-                material_column(
-                    width = 2,
-                    actionButton(
-                        inputId = "clusterButton",
-                        label = "Perform"
+            material_card(
+                    tags$div( 
+                        title = "In order to perform clustering, there should be no NA values in your data frame",
+                        actionButton(
+                            inputId = "clusterButton",
+                            label = "Perform"
+                        )
+                    ),
+                    material_row(
+                        selectInput(
+                            inputId = "cluster_x",
+                            label = "X output",
+                            choices = colnames(rv$clusterTable),
+                            multiple = FALSE
+                        ), 
+                        selectInput(
+                            inputId = "cluster_y",
+                            label = "Y output",
+                            choices = colnames(rv$clusterTable),
+                            multiple = FALSE
+                        )
                     ),
                     selectInput(
                         inputId = "cluster_alg",
                         label = "Clustering algorithm",
-                        choices = c("asd","dsa"),
+                        choices = c("K-means","Nope, only k-means"),
                         multiple = FALSE
-                    )
-                ),
-                material_column(
-                    width = 2,
+                    ),
                     sliderInput(
                         inputId = "cluster_itermax",
                         label = "Max iterations",
@@ -132,18 +137,15 @@ function(input, output) {
                         min = 1,
                         max = 100,
                         value = 10
-                    )
-                ),
-                material_column(
-                    width = 2,
+                    ),
                     numericInput(
                         inputId = "cluster_number",
                         label = "N clusters",
                         min = 2,
-                        max = nrow(rv$userTable),
+                        max = nrow(rv$userTable), #bugged: user can manually write a number > max
                         value = 2
                     )
-                )
+
             )
         }
     })
@@ -194,10 +196,12 @@ function(input, output) {
             }
         }
     })
-    
+
+    observeEvent(rv$userTable, {
+        rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
+    })
     observeEvent(c(input$clusterButton), {
         if(input$clusterButton >= 1) {
-            rv$clusterTable <- rv$userTable[sapply(rv$userTable, is.numeric)]
             rv$tableCluster <- kmeans(rv$clusterTable,
                                       centers = input$cluster_number,
                                       nstart = input$cluster_nstart,
@@ -210,8 +214,6 @@ function(input, output) {
             }
             colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
         }
-        print(rv$clusterBar)
-        
     })
     
     #Available names and colors on dropdowns
@@ -229,7 +231,6 @@ function(input, output) {
         }
 
     })
-    
     
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
     types_table <- renderRHandsontable({
@@ -255,7 +256,6 @@ function(input, output) {
             hot_table(stretchH = 'all') %>%
             hot_context_menu(allowRowEdit = TRUE, allowColEdit = TRUE)
     })
-    
     
     main_user_table <- DT::renderDataTable({
         validate(
@@ -288,7 +288,7 @@ function(input, output) {
             need(!is.null(rv$tableCluster), message = FALSE),
             errorClass = "main_table data"
         )
-        dt <- rv$userTable
+        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
         dt["Cluster"] <- rv$tableCluster$cluster
         datatable(dt,
                   selection = list(target = 'row'),
@@ -312,8 +312,6 @@ function(input, output) {
     })
     
     
-
-    
     plotlygraph <- renderPlotly({
         validate(
             need(input$graphButton >= 1, message = FALSE),
@@ -334,12 +332,16 @@ function(input, output) {
             need(input$clusterButton >= 1, message = FALSE),
             errorClass = "cluster_err"
         )
-        plot_ly(rv$clusterTable,
+        dt <- rv$clusterTable
+        plot_ly(dt,
                 type = "scatter",
-                x = rv$clusterTable[, 1],
-                y = rv$clusterTable[, 2],
+                x = dt[, input$cluster_x],
+                y = dt[, input$cluster_y],
                 color = rv$tableCluster$cluster) %>%
-            layout(title = "Cluster graph")
+            layout(title = "Cluster graph",
+                   xaxis = list(title = input$cluster_x),
+                   yaxis = list(title = input$cluster_y)
+            )
     })
     cluster_barplot <- renderPlotly({
         validate(
@@ -349,20 +351,17 @@ function(input, output) {
         plot_ly(rv$clusterBar,
                 type = "bar",
                 x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
-                y = rv$clusterBar[,"Cluster size"],
-                color = as.factor(rv$tableCluster$size)) %>%
+                y = rv$clusterBar[,"Cluster size"]) %>%
             layout(title = "Number of items in each cluster",
                    xaxis = list(title = "Cluster no."),
                    yaxis = list(title = "Cluster size")
             )
     })
 
-   
-    
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
-
+        
         output <- paste("Everything is OK!")
         if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
             output <- paste("Careful! You have NA values in dataset.")
@@ -374,9 +373,22 @@ function(input, output) {
         tags$i(output)
         
     })
-        
-        
-        
+    
+    observe({
+        if (!is.null(input$clusterButton)) {
+            # or if ("clusterButton" %in% names(input))
+            disable("clusterButton")
+            observeEvent(rv$userTable, {
+                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
+                toggleState(id = "clusterButton", condition = !rv$anyNAs)
+            })
+        }
+    })
+
+    output$fileUploadedBool <- reactive({
+        return(!is.null(user_table()))
+    })
+    outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
         
     output$cluster_buttons <- button_cluster
     output$clusterBarplot <- cluster_barplot

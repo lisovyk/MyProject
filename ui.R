@@ -7,51 +7,65 @@ material_page(
     
     material_side_nav(
         fixed = TRUE,
-        material_card(
-            title = "File Upload",
-            depth = 0,
-            fileInput(
-                'uploaded_file',
-                'Choose CSV File',
-                accept = c('text/csv',
-                           'text/comma-separated-values,text/plain',
-                           '.csv'),
-                buttonLabel = "Upload"
-            ),
-            helpText(
-                "Note: 5 MB is the maximum file size...",
-                "for now."
-            ),
-            br(),
-            material_switch(
-                input_id = "header_switch",
-                label = "",
-                off_label = "Header:",
-                on_label = "",
-                initial_value = TRUE,
-                color = "#42A5F5"
-            ),
-            material_radio_button(
-                input_id = "upload_sep",
-                "Separator:",
-                choices = c(
-                    "Comma" = ",",
-                    "Semicolon" = ";",
-                    "Tab" = "\t"
+        conditionalPanel(
+            condition = "$('a.active').attr('href') == '#first_tab'",
+            material_card(
+                title = "File Upload",
+                depth = 0,
+                fileInput(
+                    'uploaded_file',
+                    'Choose CSV File',
+                    accept = c('text/csv',
+                               'text/comma-separated-values,text/plain',
+                               '.csv'),
+                    buttonLabel = "Upload"
+                ),
+                helpText(
+                    "Note: 5 MB is the maximum file size...",
+                    "for now."
+                ),
+                br(),
+                material_switch(
+                    input_id = "header_switch",
+                    label = "",
+                    off_label = "Header:",
+                    on_label = "",
+                    initial_value = TRUE,
+                    color = "#42A5F5"
+                ),
+                material_radio_button(
+                    input_id = "upload_sep",
+                    "Separator:",
+                    choices = c(
+                        "Comma" = ",",
+                        "Semicolon" = ";",
+                        "Tab" = "\t"
+                    )
+                ),
+                material_radio_button(
+                    input_id = "upload_quote",
+                    "Quote:",
+                    choices = list(
+                        "None" = " ",
+                        "Double Quote" = '"',
+                        "Single Quote" = "'"
+                    )
                 )
             ),
-            material_radio_button(
-                input_id = "upload_quote",
-                "Quote:",
-                choices = list(
-                    "None" = " ",
-                    "Double Quote" = '"',
-                    "Single Quote" = "'"
-                )
+            hr(),
+            conditionalPanel(
+                condition = "output.fileUploadedBool",
+                uiOutput("render_button")
             )
         ),
-        hr(),
-        uiOutput("render_button")
+        conditionalPanel(
+            condition = "$('a.active').attr('href') == '#second_tab'",
+            uiOutput("graph_buttons")
+        ),
+        conditionalPanel(
+            condition = "$('a.active').attr('href') == '#clustering_tab'",
+            uiOutput("cluster_buttons")
+        )
     ),
     material_tabs(
         tabs = c(
@@ -70,19 +84,13 @@ material_page(
     material_tab_content(
         tab_id = "second_tab",
         material_row(
-            uiOutput("graph_buttons")
-        ),
-        material_row(
             plotlyOutput("plotlyGraph")
         )
     ),
     material_tab_content(
         tab_id = "clustering_tab",
-        uiOutput("cluster_buttons"),
-        material_row(
             plotlyOutput("clusterTable"),
             plotlyOutput("clusterBarplot"),
             DT::dataTableOutput("clusterUserTable")
-        )
     )
 )
