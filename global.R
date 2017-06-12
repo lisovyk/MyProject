@@ -10,5 +10,6 @@ library(DT)
 library(data.table)
 library(rhandsontable)
 library(dplyr)
+library(pcaMethods)
 
 library(datasets)

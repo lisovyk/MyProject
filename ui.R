@@ -4,7 +4,6 @@ material_page(
         tags$link(rel = "stylesheet", type = "text/css", href = "main.css")
     ),
     title = "My shiny Shiny app, yay",
-    
     material_side_nav(
         fixed = TRUE,
         conditionalPanel(
@@ -65,13 +64,18 @@ material_page(
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#clustering_tab'",
             uiOutput("cluster_buttons")
+        ),
+        conditionalPanel(
+            condition = "$('a.active').attr('href') == '#pca_tab'",
+            uiOutput("pca_buttons")
         )
     ),
     material_tabs(
         tabs = c(
             "Upload" = "first_tab",
             "Graphs" = "second_tab",
-            "Clustering" = "clustering_tab"
+            "Clustering" = "clustering_tab",
+            "PCA" = "pca_tab"
         )
     ),
     material_tab_content(
@@ -92,5 +96,9 @@ material_page(
             plotlyOutput("clusterTable"),
             plotlyOutput("clusterBarplot"),
             DT::dataTableOutput("clusterUserTable")
+    ),
+    material_tab_content(
+        tab_id = "pca_tab",
+        plotlyOutput("plotlyPCA")
     )
 )
