@@ -29,6 +29,7 @@ Within cluster sum of squares by total руками порахувати
 
 
 questions:
+lm() quadratic coeficcients
 uploaded_file "|| input.uploaded_file == undefined" not working
 Classes ‘data.table’ and 'data.frame' can't cluster without 'Apply' on 1 tab
 how to save values after changing the insides (e.g 2 tab input boxes)
