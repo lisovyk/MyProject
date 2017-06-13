@@ -3,13 +3,13 @@ set of checkboxes on tab 4 - partly done
 
 ml datasets download datasets classification, covertype data set
 pca1/pca2 on 3 tab 
-
+pca explained on 4 tab (bug: no more than 12 obs shown)
+checkbox "apply normalization" on all numerics 3rd block under typetable
 
 to do:
 4 tab - classification
-checkbox "apply normalization" on all numerics 3rd block under typetable
 
-логістична регресія, decision tree, random forest
+логістична регресія, decision tree, random forest (rpart, randomForest and lda)
 тюнинг моделі
 точність моделі
 test and train of confusion matrix
@@ -20,6 +20,7 @@ tomorrow: ієрархічна кластеризація
 getting and cleaning data
 !machine learning
 
+render types_table after reupload
 
 After: linear regression
 After: js libs into R
@@ -29,11 +30,31 @@ Within cluster sum of squares by total руками порахувати
 
 
 questions:
-lm() quadratic coeficcients
+lm() quadratic coefficients
 uploaded_file "|| input.uploaded_file == undefined" not working
 Classes ‘data.table’ and 'data.frame' can't cluster without 'Apply' on 1 tab
 how to save values after changing the insides (e.g 2 tab input boxes)
 
+normalization if there is only 1 repeated value in column?
+if(any(sapply(rv$userTable, is.factor))) {
+	for(i in 1:length(colnames(rv$userTable))) {
+		if(length(levels(as.factor(rv$userTable[,i]))) == 1) {
+		 ...
+		}
+	}
+}
+		
 
 selfedu: 
 learn S3 / S4 classes
+
+
+Generative is better in smaller sets, 
+but in classification using discriminative is generally better.
+
+• Logistic regression is very popular for classification,
+especially when K = 2.  (K - category?)
+• LDA is useful when n is small, or the classes are well
+separated, and Gaussian assumptions are reasonable. Also
+when K > 2.
+• Naive Bayes is useful when p is very large.

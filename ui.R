@@ -93,12 +93,13 @@ material_page(
     ),
     material_tab_content(
         tab_id = "clustering_tab",
-            plotlyOutput("clusterTable"),
-            plotlyOutput("clusterBarplot"),
-            DT::dataTableOutput("clusterUserTable")
+        plotlyOutput("clusterTable"),
+        plotlyOutput("clusterBarplot"),
+        DT::dataTableOutput("clusterUserTable")
     ),
     material_tab_content(
         tab_id = "pca_tab",
-        plotlyOutput("plotlyPCA")
+        plotlyOutput("plotlyPCA"),
+        plotlyOutput("pca_explained")
     )
 )

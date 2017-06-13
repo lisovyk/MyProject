@@ -181,12 +181,11 @@ function(input, output) {
         }
     })
     
-    
     #buttons events
     observeEvent(c(input$button_table_convertion), {
         if(input$button_table_convertion >= 1){
             if(!input$checkbox_delete_rows){
-                rv$user_table_init <- user_table()
+                rv$user_table_init <- data.frame(user_table())
             }
             rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
                 if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
@@ -219,7 +218,6 @@ function(input, output) {
                 }
         }
     })
-    
     observeEvent(c(input$graphButton), {
         if(input$graphButton >= 1) {
             rv$ColnameX <- input$graph_x
@@ -235,7 +233,6 @@ function(input, output) {
             }
         }
     })
-
     observeEvent(rv$userTable, {
         rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
@@ -255,6 +252,17 @@ function(input, output) {
         }
     })
     
+    # Unavailability of button if no file uploaded
+    observe({
+        if (!is.null(input$clusterButton)) {
+            # or if ("clusterButton" %in% names(input))
+            disable("clusterButton")
+            observeEvent(rv$userTable, {
+                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
+                toggleState(id = "clusterButton", condition = !rv$anyNAs)
+            })
+        }
+    })
     #Available names and colors on dropdowns
     observeEvent(rv$userTable, {
         rv$AvailableCols <- character(0)
@@ -401,28 +409,18 @@ function(input, output) {
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
         
-        output <- paste("Everything is OK!")
+        rv$output <- paste("Everything is OK!")
         if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
-            output <- paste("Careful! You have NA values in dataset.")
+            rv$output <- paste("Careful! You have NA values in dataset.")
             toggleClass(id = "text_caution", class = "redtext")
         }
-        if(output == paste("Everything is OK!")) {
+        if(rv$output == paste("Everything is OK!")) {
             toggleClass(id = "text_caution", class = "greentext")
         }
-        tags$i(output)
+        tags$i(rv$output)
         
     })
-    
-    observe({
-        if (!is.null(input$clusterButton)) {
-            # or if ("clusterButton" %in% names(input))
-            disable("clusterButton")
-            observeEvent(rv$userTable, {
-                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
-                toggleState(id = "clusterButton", condition = !rv$anyNAs)
-            })
-        }
-    })
+
 
     output$fileUploadedBool <- reactive({
         return(!is.null(user_table()))
@@ -436,7 +434,19 @@ function(input, output) {
         rv$pca_prep <- prcomp(data, scale. = TRUE)
         rv$pca_output <- as.data.frame(rv$pca_prep$x)
     })
-    
+    plotlyPCA_explained <- renderPlotly({
+        validate(
+            need(input$pcaButton >= 1, message = FALSE),
+            errorClass = "PCA_plotly_err"
+        )
+        numeric_order_barNames <- factor(colnames(rv$pca_prep$x), levels=colnames(rv$pca_prep$x))
+        pca_explained <- rv$pca_prep$sdev^2 / sum(rv$pca_prep$sdev^2)
+        plot_ly(type = "bar",
+                x = numeric_order_barNames,
+                y = pca_explained) %>%
+            layout(title = "Percentage of explained variance",
+                   hovermode = 'x')
+    })
     plotlyPCA <- renderPlotly({
         validate(
             need(input$pcaButton >= 1, message = FALSE),
@@ -453,6 +463,8 @@ function(input, output) {
     })
     
     
+    
+    output$pca_explained <- plotlyPCA_explained
     output$pca_buttons <- pca_buttons
     output$plotlyPCA <- plotlyPCA
     output$cluster_buttons <- button_cluster
