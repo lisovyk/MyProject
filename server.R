@@ -15,8 +15,8 @@ function(input, output) {
     })
     
     observeEvent(input$uploaded_file, {
-        rv$user_table_init <- user_table()
-        rv$userTable <- user_table()
+        rv$user_table_init <- data.frame(user_table())
+        rv$userTable <- data.frame(user_table())
     })
 
     #functions
@@ -56,6 +56,11 @@ function(input, output) {
                 input_id = "checkbox_delete_rows",
                 label = "Delete selected rows",
                 initial_value = TRUE
+            ),
+            material_checkbox(
+                input_id = "normalize",
+                label = "Apply normalization",
+                initial_value = FALSE
             ),
             rHandsontableOutput("handsontypes"),
             uiOutput("text_caution")
@@ -121,7 +126,7 @@ function(input, output) {
                     selectInput(
                         inputId = "cluster_alg",
                         label = "Clustering algorithm",
-                        choices = c("K-means","Nope, only k-means"),
+                        choices = c("K-means","EM"),
                         multiple = FALSE
                     ),
                     sliderInput(
@@ -149,12 +154,38 @@ function(input, output) {
             )
         }
     })
-
+    pca_buttons <- renderUI({
+        if(!is.null(input$uploaded_file)) {
+            material_card(
+                actionButton(
+                    inputId = "pcaButton",
+                    label = "Analyse"
+                ),
+                material_row(
+                    selectInput(
+                        inputId = "pca_1",
+                        label = "pca 1",
+                        choices = colnames(rv$pca_prep$x),
+                        selected = "PC1",
+                        multiple = FALSE
+                    ),
+                    selectInput(
+                        inputId = "pca_2",
+                        label = "pca 2",
+                        choices = colnames(rv$pca_prep$x),
+                        selected = "PC2",
+                        multiple = FALSE
+                    )
+                )
+            )        
+        }
+    })
+    
     #buttons events
     observeEvent(c(input$button_table_convertion), {
         if(input$button_table_convertion >= 1){
             if(!input$checkbox_delete_rows){
-                rv$user_table_init <- user_table()
+                rv$user_table_init <- data.frame(user_table())
             }
             rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
                 if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
@@ -178,9 +209,15 @@ function(input, output) {
                     user_input <- user_input[!(rownames(user_input) %in% drops), ]
                     rv$userTable <- rv$userTable[ , rownames(user_input)]
                 }
+                if(input$normalize) {
+                    for(i in 1:length(colnames(rv$userTable))) {
+                        if(class(rv$userTable[,i]) == "numeric" ||
+                           class(rv$userTable[,i]) == "integer") {
+                            rv$userTable[,i] <- as.vector(scale(rv$userTable[,i])) }
+                    }
+                }
         }
     })
-    
     observeEvent(c(input$graphButton), {
         if(input$graphButton >= 1) {
             rv$ColnameX <- input$graph_x
@@ -196,12 +233,11 @@ function(input, output) {
             }
         }
     })
-
     observeEvent(rv$userTable, {
         rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
     observeEvent(c(input$clusterButton), {
-        if(input$clusterButton >= 1) {
+        if(input$clusterButton >= 1 & input$cluster_alg == "K-means") {
             rv$tableCluster <- kmeans(rv$clusterTable,
                                       centers = input$cluster_number,
                                       nstart = input$cluster_nstart,
@@ -214,8 +250,31 @@ function(input, output) {
             }
             colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
         }
+        if(input$clusterButton >= 1 & input$cluster_alg == "EM") {
+            rv$tableCluster <- em.EM(rv$clusterTable,
+                                     nclass = input$cluster_number)
+            rv$tableCluster$cluster <- as.factor(rv$tableCluster$class)
+            
+            rv$clusterBar <- data.frame(1:length(rv$tableCluster$nc))
+            for(i in 1:length(rv$tableCluster$nc)) {
+                rv$clusterBar[i,2] <- rv$tableCluster$nc[i]
+            }
+            colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
+        }
+            
     })
     
+    # Unavailability of button if no file uploaded
+    observe({
+        if (!is.null(input$clusterButton)) {
+            # or if ("clusterButton" %in% names(input))
+            disable("clusterButton")
+            observeEvent(rv$userTable, {
+                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
+                toggleState(id = "clusterButton", condition = !rv$anyNAs)
+            })
+        }
+    })
     #Available names and colors on dropdowns
     observeEvent(rv$userTable, {
         rv$AvailableCols <- character(0)
@@ -239,7 +298,7 @@ function(input, output) {
                         NAs = sapply(rv$userTable, function(y) sum(is.na(y))),
                         stringsAsFactors = FALSE)
         if(!is.null(input$handsontypes)) {
-            DF <- merge(hot_to_r(input$handsontypes),
+            DF <- merge(data.frame(hot_to_r(input$handsontypes)),
                         DF,
                         by.x = "Type",
                         by.y = 0,
@@ -289,7 +348,7 @@ function(input, output) {
             errorClass = "main_table data"
         )
         dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-        dt["Cluster"] <- rv$tableCluster$cluster
+        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
         datatable(dt,
                   selection = list(target = 'row'),
                   options = list(
@@ -332,11 +391,11 @@ function(input, output) {
             need(input$clusterButton >= 1, message = FALSE),
             errorClass = "cluster_err"
         )
-        dt <- rv$clusterTable
-        plot_ly(dt,
+        df <- rv$clusterTable
+        plot_ly(df,
                 type = "scatter",
-                x = dt[, input$cluster_x],
-                y = dt[, input$cluster_y],
+                x = df[, input$cluster_x],
+                y = df[, input$cluster_y],
                 color = rv$tableCluster$cluster) %>%
             layout(title = "Cluster graph",
                    xaxis = list(title = input$cluster_x),
@@ -362,34 +421,64 @@ function(input, output) {
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
         
-        output <- paste("Everything is OK!")
+        rv$output <- paste("Everything is OK!")
         if(any(apply(rv$userTable, 2, function(x) any(is.na(x))))) {
-            output <- paste("Careful! You have NA values in dataset.")
+            rv$output <- paste("Careful! You have NA values in dataset.")
             toggleClass(id = "text_caution", class = "redtext")
         }
-        if(output == paste("Everything is OK!")) {
+        if(rv$output == paste("Everything is OK!")) {
             toggleClass(id = "text_caution", class = "greentext")
         }
-        tags$i(output)
+        tags$i(rv$output)
         
     })
-    
-    observe({
-        if (!is.null(input$clusterButton)) {
-            # or if ("clusterButton" %in% names(input))
-            disable("clusterButton")
-            observeEvent(rv$userTable, {
-                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
-                toggleState(id = "clusterButton", condition = !rv$anyNAs)
-            })
-        }
-    })
+
 
     output$fileUploadedBool <- reactive({
         return(!is.null(user_table()))
     })
     outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
         
+    # pca
+    observeEvent(input$clusterButton, {
+        data <- rv$userTable[sapply(rv$userTable, is.numeric)]
+        data <- scale(data)
+        rv$pca_prep <- prcomp(data, scale. = TRUE)
+        rv$pca_output <- as.data.frame(rv$pca_prep$x)
+    })
+    plotlyPCA_explained <- renderPlotly({
+        validate(
+            need(input$pcaButton >= 1, message = FALSE),
+            errorClass = "PCA_plotly_err"
+        )
+        numeric_order_barNames <- factor(colnames(rv$pca_prep$x), levels=colnames(rv$pca_prep$x))
+        pca_explained <- rv$pca_prep$sdev^2 / sum(rv$pca_prep$sdev^2)
+        plot_ly(type = "bar",
+                x = numeric_order_barNames,
+                y = pca_explained) %>%
+            layout(title = "Percentage of explained variance",
+                   hovermode = 'x')
+    })
+    plotlyPCA <- renderPlotly({
+        validate(
+            need(input$pcaButton >= 1, message = FALSE),
+            errorClass = "PCA_plotly_err"
+        )
+        df <- rv$pca_output
+        plot_ly(df,
+                type = "scatter",
+                x = df[,input$pca_1],
+                y = df[,input$pca_2],
+                opacity = 0.8,
+                color = as.factor(rv$tableCluster$cluster)) %>%
+            layout(title = "PCA")
+    })
+    
+    
+    
+    output$pca_explained <- plotlyPCA_explained
+    output$pca_buttons <- pca_buttons
+    output$plotlyPCA <- plotlyPCA
     output$cluster_buttons <- button_cluster
     output$clusterBarplot <- cluster_barplot
     output$clusterTable <- cluster_table
