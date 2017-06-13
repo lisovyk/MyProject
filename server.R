@@ -126,7 +126,7 @@ function(input, output) {
                     selectInput(
                         inputId = "cluster_alg",
                         label = "Clustering algorithm",
-                        choices = c("K-means","Nope, only k-means"),
+                        choices = c("K-means","EM"),
                         multiple = FALSE
                     ),
                     sliderInput(
@@ -237,7 +237,7 @@ function(input, output) {
         rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
     observeEvent(c(input$clusterButton), {
-        if(input$clusterButton >= 1) {
+        if(input$clusterButton >= 1 & input$cluster_alg == "K-means") {
             rv$tableCluster <- kmeans(rv$clusterTable,
                                       centers = input$cluster_number,
                                       nstart = input$cluster_nstart,
@@ -250,6 +250,18 @@ function(input, output) {
             }
             colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
         }
+        if(input$clusterButton >= 1 & input$cluster_alg == "EM") {
+            rv$tableCluster <- em.EM(rv$clusterTable,
+                                     nclass = input$cluster_number)
+            rv$tableCluster$cluster <- as.factor(rv$tableCluster$class)
+            
+            rv$clusterBar <- data.frame(1:length(rv$tableCluster$nc))
+            for(i in 1:length(rv$tableCluster$nc)) {
+                rv$clusterBar[i,2] <- rv$tableCluster$nc[i]
+            }
+            colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
+        }
+            
     })
     
     # Unavailability of button if no file uploaded

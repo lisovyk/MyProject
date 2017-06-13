@@ -6,6 +6,7 @@ pca1/pca2 on 3 tab
 pca explained on 4 tab (bug: no more than 12 obs shown)
 checkbox "apply normalization" on all numerics 3rd block under typetable
 
+added EMClustering option
 to do:
 4 tab - classification
 
