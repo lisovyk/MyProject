@@ -180,6 +180,14 @@ function(input, output) {
             )        
         }
     })
+    classification_buttons <- renderUI({
+        if(!is.null(input$uploaded_file)) {
+            material_card(
+                
+                
+            )
+        }
+    })
     
     #buttons events
     observeEvent(c(input$button_table_convertion), {
@@ -474,8 +482,31 @@ function(input, output) {
             layout(title = "PCA")
     })
     
+    confusion_matrix <- DT::renderDataTable({
+        validate(
+            need(input$clusterButton >= 1, message = FALSE),
+            errorClass = "cluster_barplot_err"
+        )
+        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
+        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
+        testidx <- which(1:length(dt[,1])%%5 == 0)
+        rvtrain <- dt[-testidx,]
+        rvtest <- dt[testidx,]
+        model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
+        prediction <- predict(model, newdata=rvtest, type="class")
+        dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
+        colnames(dt) <- levels(rv$tableCluster$cluster)
+        dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
+        
+        datatable(dt,
+                  rownames = FALSE,
+                  selection = list(target = 'none'),
+                  filter = "none",
+                  options = list(dom = "t"))
+        
+    })
     
-    
+    output$confusion_matrix <- confusion_matrix
     output$pca_explained <- plotlyPCA_explained
     output$pca_buttons <- pca_buttons
     output$plotlyPCA <- plotlyPCA
@@ -486,6 +517,7 @@ function(input, output) {
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
+    output$classification_buttons <- classification_buttons
     output$plotlyGraph <- plotlygraph
     output$clusterUserTable <- cluster_user_table
 }

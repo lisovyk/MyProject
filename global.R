@@ -12,5 +12,6 @@ library(rhandsontable)
 library(dplyr)
 library(pcaMethods)
 library(EMCluster)
-
+library(randomForest)
+library(caret)
 library(datasets)
