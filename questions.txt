@@ -5,6 +5,7 @@
 test and train of confusion matrix //todo: add overall accuracy
 
 done: 
+practical machine learning   
 set of checkboxes on tab 4 - partly done
 
 ml datasets download datasets classification, covertype data set
@@ -21,14 +22,13 @@ linear model selection and regularization
 to do:
 4 tab - classification
 
-логістична регресія, decision tree, random forest (rpart, randomForest and lda)
+логістична регресія, decision tree, random forest (rpart, randomForest and lda) Gradiant boosting > RF ? 
 тюнинг моделі
 точність моделі
+support vector machine
 
 
-
-tomorrow: ієрархічна кластеризація
-!practical machine learning    lib caret cross-validation train()
+lib caret cross-validation train()
 getting and cleaning data
 !machine learning
 
@@ -62,6 +62,14 @@ if(any(sapply(rv$userTable, is.factor))) {
 }
 		
 
+
+preProcess(training, ...)
+scale(...)                   -- same?
+
+
+
+
+		
 selfedu: 
 learn S3 / S4 classes
 https://cran.r-project.org/web/packages/EMCluster/EMCluster.pdf
@@ -70,7 +78,7 @@ Generative is better in smaller sets,
 but in classification using discriminative is generally better.
 
 • Logistic regression is very popular for classification,
-especially when K = 2.  (K - category?)
+especially when K = 2.
 • LDA is useful when n is small, or the classes are well
 separated, and Gaussian assumptions are reasonable. Also
 when K > 2.
