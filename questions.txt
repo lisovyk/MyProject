@@ -37,7 +37,7 @@ render types_table after reupload
 
 
 After: js libs into R
-
+підключити джс ліби в Р
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластеризації
 
@@ -47,6 +47,9 @@ Within cluster sum of squares by total руками порахувати
 
 
 questions:
+googleVis https://cran.r-project.org/web/packages/googleVis/vignettes/googleVis_examples.html
+
+
 lm() quadratic coefficients
 uploaded_file "|| input.uploaded_file == undefined" not working
 Classes ‘data.table’ and 'data.frame' can't cluster without 'Apply' on 1 tab

@@ -14,4 +14,6 @@ library(pcaMethods)
 library(EMCluster)
 library(randomForest)
 library(caret)
+library(dendextend)
+
 library(datasets)

@@ -102,59 +102,94 @@ function(input, output) {
     button_cluster <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
-                    tags$div( 
-                        title = "In order to perform clustering, there should be no NA values in your data frame",
-                        actionButton(
-                            inputId = "clusterButton",
-                            label = "Perform"
-                        )
-                    ),
-                    material_row(
-                        selectInput(
-                            inputId = "cluster_x",
-                            label = "X output",
-                            choices = colnames(rv$clusterTable),
-                            multiple = FALSE
-                        ), 
-                        selectInput(
-                            inputId = "cluster_y",
-                            label = "Y output",
-                            choices = colnames(rv$clusterTable),
-                            multiple = FALSE
-                        )
-                    ),
-                    selectInput(
-                        inputId = "cluster_alg",
-                        label = "Clustering algorithm",
-                        choices = c("K-means","EM", "Hierarchical"),
-                        multiple = FALSE
-                    ),
-                    sliderInput(
-                        inputId = "cluster_itermax",
-                        label = "Max iterations",
-                        min = 1,
-                        max = 1000,
-                        value = 100
-                    ),
-                    sliderInput(
-                        inputId = "cluster_nstart",
-                        label = "Nstart",
-                        min = 1,
-                        max = 100,
-                        value = 10
-                    ),
-                    numericInput(
-                        inputId = "cluster_number",
-                        label = "N clusters",
-                        min = 2,
-                        max = nrow(rv$userTable), #bugged: user can manually write a number > max
-                        value = 2
+                tags$div(
+                    title = "In order to perform clustering, there should be no NA values in your data frame",
+                    actionButton(
+                        inputId = "clusterButton",
+                        label = "Perform"
                     )
-
+                ),
+                selectInput(
+                    inputId = "cluster_alg",
+                    label = "Clustering algorithm",
+                    choices = c("K-means","EM", "Hierarchical"),
+                    multiple = FALSE
+                )
             )
         }
     })
+    observe(print(input$cluster_alg))
     
+    button_cluster_type <- renderUI({
+        if(input$cluster_alg == "K-means") {
+                material_row(
+                    selectInput(
+                        inputId = "cluster_x",
+                        label = "X output",
+                        choices = colnames(rv$clusterTable),
+                        multiple = FALSE
+                    ), 
+                    selectInput(
+                        inputId = "cluster_y",
+                        label = "Y output",
+                        choices = colnames(rv$clusterTable),
+                        multiple = FALSE
+                    )
+                )
+                sliderInput(
+                    inputId = "cluster_itermax",
+                    label = "Max iterations",
+                    min = 1,
+                    max = 1000,
+                    value = 100
+                )
+                sliderInput(
+                    inputId = "cluster_nstart",
+                    label = "Nstart",
+                    min = 1,
+                    max = 100,
+                    value = 10
+                )
+                numericInput(
+                    inputId = "cluster_number",
+                    label = "N clusters",
+                    min = 2,
+                    max = nrow(rv$userTable), #bugged: user can manually write a number > max
+                    value = 2
+                )
+        }
+        if(input$cluster_alg == "EM") {
+            selectInput(
+                inputId = "cluster_x",
+                label = "X output",
+                choices = colnames(rv$clusterTable),
+                multiple = FALSE
+            )
+            selectInput(
+                inputId = "cluster_y",
+                label = "Y output",
+                choices = colnames(rv$clusterTable),
+                multiple = FALSE
+            )
+            numericInput(
+                inputId = "cluster_number",
+                label = "N clusters",
+                min = 2,
+                max = nrow(rv$userTable), #bugged: user can manually write a number > max
+                value = 2
+                )
+        }
+        if(input$cluster_alg == "Hierarchical") {
+            numericInput(
+                inputId = "hc_k",
+                label = "Number of Leaves",
+                value = 2,
+                min = 2,
+                max = 20
+            )
+        }
+})
+    output$button_cluster_type <- button_cluster_type
     pca_buttons <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
@@ -273,8 +308,7 @@ function(input, output) {
         }
         
         if(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical") {
-            d <- dist(rv$clusterTable, method = "euclidean")
-            rv$hcust <- hclust(d)
+            rv$hclust <- rv$clusterTable %>% dist %>% hclust %>% as.dendrogram
         }
     })
     
@@ -456,9 +490,11 @@ function(input, output) {
     hclustplot <- renderPlot({
         validate(
             need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
-            errorClass = "cluster_barplot_err"
+            errorClass = "hclust_err"
         )
-        plot(rv$hcust)
+        rv$hclust %>% color_branches(k=input$hc_k) %>% plot(main = "Dendrogram")
+        rv$hclust %>% rect.dendrogram(k=input$hc_k)
+        # abline(v = heights_per_k.dendrogram(rv$hclust[input$hc_k] + .6, lwd = 2, lty = 2, col = "blue"))
     })
 
     

@@ -63,7 +63,8 @@ material_page(
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#clustering_tab'",
-            uiOutput("cluster_buttons")
+            uiOutput("cluster_buttons"),
+            uiOutput("button_cluster_type")
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#pca_tab'",
