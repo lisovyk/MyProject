@@ -98,9 +98,11 @@ material_page(
     ),
     material_tab_content(
         tab_id = "clustering_tab",
+        plotOutput("hclustplot"),
         plotlyOutput("clusterTable"),
         plotlyOutput("clusterBarplot"),
         DT::dataTableOutput("clusterUserTable"),
+        h5("Confusion matrix"),
         DT::dataTableOutput("confusion_matrix")
     ),
     material_tab_content(

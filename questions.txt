@@ -17,6 +17,8 @@ added EMClustering option
 
 leave-one-out cross-validation; k-fold valid
 bootstraping
+machine learning
+After: linear regression
 
 linear model selection and regularization
 to do:
@@ -30,15 +32,18 @@ support vector machine
 
 lib caret cross-validation train()
 getting and cleaning data
-!machine learning
 
 render types_table after reupload
 
-After: linear regression
+
 After: js libs into R
 
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластеризації
+
+
+
+
 
 
 questions:

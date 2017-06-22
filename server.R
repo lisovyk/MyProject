@@ -126,7 +126,7 @@ function(input, output) {
                     selectInput(
                         inputId = "cluster_alg",
                         label = "Clustering algorithm",
-                        choices = c("K-means","EM"),
+                        choices = c("K-means","EM", "Hierarchical"),
                         multiple = FALSE
                     ),
                     sliderInput(
@@ -154,6 +154,7 @@ function(input, output) {
             )
         }
     })
+    
     pca_buttons <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
@@ -258,6 +259,7 @@ function(input, output) {
             }
             colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
         }
+        
         if(input$clusterButton >= 1 & input$cluster_alg == "EM") {
             rv$tableCluster <- em.EM(rv$clusterTable,
                                      nclass = input$cluster_number)
@@ -269,7 +271,11 @@ function(input, output) {
             }
             colnames(rv$clusterBar) <- c("Cluster no.", "Cluster size")
         }
-            
+        
+        if(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical") {
+            d <- dist(rv$clusterTable, method = "euclidean")
+            rv$hcust <- hclust(d)
+        }
     })
     
     # Unavailability of button if no file uploaded
@@ -350,9 +356,10 @@ function(input, output) {
         )
     })
     
+    
     cluster_user_table <- DT::renderDataTable({
         validate(
-            need(!is.null(rv$tableCluster), message = FALSE),
+            need(!is.null(rv$tableCluster$cluster), message = FALSE),
             errorClass = "main_table data"
         )
         dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
@@ -377,8 +384,6 @@ function(input, output) {
                                     ")")
         )
     })
-    
-    
     plotlygraph <- renderPlotly({
         validate(
             need(input$graphButton >= 1, message = FALSE),
@@ -396,7 +401,7 @@ function(input, output) {
     })
     cluster_table <- renderPlotly({
         validate(
-            need(input$clusterButton >= 1, message = FALSE),
+            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
             errorClass = "cluster_err"
         )
         df <- rv$clusterTable
@@ -412,7 +417,7 @@ function(input, output) {
     })
     cluster_barplot <- renderPlotly({
         validate(
-            need(input$clusterButton >= 1, message = FALSE),
+            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
             errorClass = "cluster_barplot_err"
         )
         plot_ly(rv$clusterBar,
@@ -424,7 +429,40 @@ function(input, output) {
                    yaxis = list(title = "Cluster size")
             )
     })
+    confusion_matrix <- DT::renderDataTable({
+        validate(
+            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
+            errorClass = "cluster_barplot_err"
+        )
+        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
+        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
+        testidx <- which(1:length(dt[,1])%%5 == 0)
+        rvtrain <- dt[-testidx,]
+        rvtest <- dt[testidx,]
+        model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
+        prediction <- predict(model, newdata=rvtest, type="class")
+        dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
+        colnames(dt) <- levels(rv$tableCluster$cluster)
+        dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
+        
+        datatable(dt,
+                  rownames = FALSE,
+                  selection = list(target = 'none'),
+                  filter = "none",
+                  options = list(dom = "t"))
+        
+    })
+    
+    hclustplot <- renderPlot({
+        validate(
+            need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
+            errorClass = "cluster_barplot_err"
+        )
+        plot(rv$hcust)
+    })
 
+    
+   
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -440,13 +478,11 @@ function(input, output) {
         tags$i(rv$output)
         
     })
-
-
     output$fileUploadedBool <- reactive({
         return(!is.null(user_table()))
     })
     outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
-        
+         
     # pca
     observeEvent(input$clusterButton, {
         data <- rv$userTable[sapply(rv$userTable, is.numeric)]
@@ -482,30 +518,7 @@ function(input, output) {
             layout(title = "PCA")
     })
     
-    confusion_matrix <- DT::renderDataTable({
-        validate(
-            need(input$clusterButton >= 1, message = FALSE),
-            errorClass = "cluster_barplot_err"
-        )
-        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-        testidx <- which(1:length(dt[,1])%%5 == 0)
-        rvtrain <- dt[-testidx,]
-        rvtest <- dt[testidx,]
-        model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
-        prediction <- predict(model, newdata=rvtest, type="class")
-        dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
-        colnames(dt) <- levels(rv$tableCluster$cluster)
-        dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
-        
-        datatable(dt,
-                  rownames = FALSE,
-                  selection = list(target = 'none'),
-                  filter = "none",
-                  options = list(dom = "t"))
-        
-    })
-    
+    output$hclustplot <- hclustplot
     output$confusion_matrix <- confusion_matrix
     output$pca_explained <- plotlyPCA_explained
     output$pca_buttons <- pca_buttons
