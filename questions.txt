@@ -1,4 +1,11 @@
-﻿done: 
+﻿закінчити курс по статистиці
+лінійні / нелінійні моделі, логістична регресія
+закінчити класифікацію і confusion matrix
+підключити лібу shinyBS
+test and train of confusion matrix //todo: add overall accuracy
+
+done: 
+practical machine learning   
 set of checkboxes on tab 4 - partly done
 
 ml datasets download datasets classification, covertype data set
@@ -7,34 +14,51 @@ pca explained on 4 tab (bug: no more than 12 obs shown)
 checkbox "apply normalization" on all numerics 3rd block under typetable
 
 added EMClustering option
+
+leave-one-out cross-validation; k-fold valid
+bootstraping
+machine learning
+After: linear regression
+
+linear model selection and regularization
 to do:
 4 tab - classification
 
-логістична регресія, decision tree, random forest (rpart, randomForest and lda)
+логістична регресія, decision tree, random forest (rpart, randomForest and lda) Gradiant boosting > RF ? 
 тюнинг моделі
 точність моделі
-test and train of confusion matrix
+support vector machine
 
 
-tomorrow: ієрархічна кластеризація
-!practical machine learning    lib caret 
+lib caret cross-validation train()
 getting and cleaning data
-!machine learning
 
 render types_table after reupload
 
-After: linear regression
-After: js libs into R
 
+After: js libs into R
+підключити джс ліби в Р
 Within cluster sum of squares by total руками порахувати
 ? вибір алгоритми кластеризації
 
 
+
+
+
+
 questions:
+googleVis https://cran.r-project.org/web/packages/googleVis/vignettes/googleVis_examples.html
+
+
 lm() quadratic coefficients
 uploaded_file "|| input.uploaded_file == undefined" not working
 Classes ‘data.table’ and 'data.frame' can't cluster without 'Apply' on 1 tab
 how to save values after changing the insides (e.g 2 tab input boxes)
+
+bootstrapLib() for shinyBS
+
+Monte Carlo Simulation in Bootstrap resampling method
+
 
 normalization if there is only 1 repeated value in column?
 if(any(sapply(rv$userTable, is.factor))) {
@@ -46,15 +70,23 @@ if(any(sapply(rv$userTable, is.factor))) {
 }
 		
 
+
+preProcess(training, ...)
+scale(...)                   -- same?
+
+
+
+
+		
 selfedu: 
 learn S3 / S4 classes
-
+https://cran.r-project.org/web/packages/EMCluster/EMCluster.pdf
 
 Generative is better in smaller sets, 
 but in classification using discriminative is generally better.
 
 • Logistic regression is very popular for classification,
-especially when K = 2.  (K - category?)
+especially when K = 2.
 • LDA is useful when n is small, or the classes are well
 separated, and Gaussian assumptions are reasonable. Also
 when K > 2.

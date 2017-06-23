@@ -63,11 +63,16 @@ material_page(
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#clustering_tab'",
-            uiOutput("cluster_buttons")
+            uiOutput("cluster_buttons"),
+            uiOutput("button_cluster_type")
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#pca_tab'",
             uiOutput("pca_buttons")
+        ),
+        conditionalPanel(
+            condition = "$('a.active').attr('href') == '#classification_tab'",
+            uiOutput("classification_button")
         )
     ),
     material_tabs(
@@ -75,7 +80,8 @@ material_page(
             "Upload" = "first_tab",
             "Graphs" = "second_tab",
             "Clustering" = "clustering_tab",
-            "PCA" = "pca_tab"
+            "PCA" = "pca_tab",
+            "Classification" = "classification_tab"
         )
     ),
     material_tab_content(
@@ -93,13 +99,15 @@ material_page(
     ),
     material_tab_content(
         tab_id = "clustering_tab",
-        plotlyOutput("clusterTable"),
-        plotlyOutput("clusterBarplot"),
-        DT::dataTableOutput("clusterUserTable")
+        uiOutput("clustTab")
+        
     ),
     material_tab_content(
         tab_id = "pca_tab",
         plotlyOutput("plotlyPCA"),
         plotlyOutput("pca_explained")
+    ),
+    material_tab_content(
+        tab_id = "classification_tab"
     )
 )
