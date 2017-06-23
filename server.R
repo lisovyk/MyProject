@@ -34,6 +34,17 @@ function(input, output) {
         }
         obj
     }
+    colLab <- function(n) {
+        if (is.leaf(n)) {
+            a <- attributes(n)
+            labCol <- dendLabelColors[clusMember[which(names(clusMember) == a$label)]]
+            attr(n, "nodePar") <- c(a$nodePar, lab.col = labCol)
+        }
+        n
+    }
+    dendLabelColors <- c("#e6194b", "#3cb44b", "#ffe119", "#0082c8", "#f58231",
+                         "#911eb4", "#46f0f0", "#f032e6", "#d2f53c", "#fabebe",
+                         "#008080", "#e6beff", "#800000", "#aaffc3", "#000080")
 
     #buttons ui
     button_render <- renderUI({
@@ -118,10 +129,10 @@ function(input, output) {
             )
         }
     })
-    observe(print(input$cluster_alg))
     
     button_cluster_type <- renderUI({
         if(input$cluster_alg == "K-means") {
+            material_card(
                 material_row(
                     selectInput(
                         inputId = "cluster_x",
@@ -135,21 +146,21 @@ function(input, output) {
                         choices = colnames(rv$clusterTable),
                         multiple = FALSE
                     )
-                )
+                ),
                 sliderInput(
                     inputId = "cluster_itermax",
                     label = "Max iterations",
                     min = 1,
                     max = 1000,
                     value = 100
-                )
+                ),
                 sliderInput(
                     inputId = "cluster_nstart",
                     label = "Nstart",
                     min = 1,
                     max = 100,
                     value = 10
-                )
+                ),
                 numericInput(
                     inputId = "cluster_number",
                     label = "N clusters",
@@ -157,35 +168,46 @@ function(input, output) {
                     max = nrow(rv$userTable), #bugged: user can manually write a number > max
                     value = 2
                 )
+            )
         }
         if(input$cluster_alg == "EM") {
-            selectInput(
-                inputId = "cluster_x",
-                label = "X output",
-                choices = colnames(rv$clusterTable),
-                multiple = FALSE
-            )
-            selectInput(
-                inputId = "cluster_y",
-                label = "Y output",
-                choices = colnames(rv$clusterTable),
-                multiple = FALSE
-            )
-            numericInput(
-                inputId = "cluster_number",
-                label = "N clusters",
-                min = 2,
-                max = nrow(rv$userTable), #bugged: user can manually write a number > max
-                value = 2
+            material_card(
+                selectInput(
+                    inputId = "cluster_x",
+                    label = "X output",
+                    choices = colnames(rv$clusterTable),
+                    multiple = FALSE
+                ),
+                selectInput(
+                    inputId = "cluster_y",
+                    label = "Y output",
+                    choices = colnames(rv$clusterTable),
+                    multiple = FALSE
+                ),
+                numericInput(
+                    inputId = "cluster_number",
+                    label = "N clusters",
+                    min = 2,
+                    max = nrow(rv$userTable), #bugged: user can manually write a number > max
+                    value = 2
                 )
+            )
         }
         if(input$cluster_alg == "Hierarchical") {
-            numericInput(
-                inputId = "hc_k",
-                label = "Number of Leaves",
-                value = 2,
-                min = 2,
-                max = 20
+            material_card(
+                numericInput(
+                    inputId = "hc_k",
+                    label = "Number of Leaves",
+                    value = 2,
+                    min = 2,
+                    max = 20
+                ),
+                selectInput(
+                    inputId = "hcmetric",
+                    label = "Metric",
+                    choices = c("euclidean", "manhattan", "gower"),
+                    selected = "euclidean"
+                )
             )
         }
 })
@@ -308,7 +330,8 @@ function(input, output) {
         }
         
         if(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical") {
-            rv$hclust <- rv$clusterTable %>% dist %>% hclust %>% as.dendrogram
+            rv$hclust <- rv$clusterTable %>% daisy(metric = input$hcmetric) %>% hclust %>% as.dendrogram
+            
         }
     })
     
@@ -492,9 +515,12 @@ function(input, output) {
             need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
             errorClass = "hclust_err"
         )
-        rv$hclust %>% color_branches(k=input$hc_k) %>% plot(main = "Dendrogram")
-        rv$hclust %>% rect.dendrogram(k=input$hc_k)
-        # abline(v = heights_per_k.dendrogram(rv$hclust[input$hc_k] + .6, lwd = 2, lty = 2, col = "blue"))
+        clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
+        clusDendro <- dendrapply(rv$hclust, colLab)
+        clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
+                                                                                                  ylab = paste(input$hcmetric, "distance"))
+        clusDendro %>% rect.dendrogram(k=input$hc_k)
+        abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
     })
 
     
