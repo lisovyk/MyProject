@@ -169,8 +169,8 @@ function(input, output) {
                     value = 2
                 )
             )
-        }
-        if(input$cluster_alg == "EM") {
+        
+        } else if (input$cluster_alg == "EM") {
             material_card(
                 selectInput(
                     inputId = "cluster_x",
@@ -192,8 +192,8 @@ function(input, output) {
                     value = 2
                 )
             )
-        }
-        if(input$cluster_alg == "Hierarchical") {
+        
+            } else if(input$cluster_alg == "Hierarchical") {
             material_card(
                 numericInput(
                     inputId = "hc_k",
@@ -412,35 +412,6 @@ function(input, output) {
                                     ")")
         )
     })
-    
-    
-    cluster_user_table <- DT::renderDataTable({
-        validate(
-            need(!is.null(rv$tableCluster$cluster), message = FALSE),
-            errorClass = "main_table data"
-        )
-        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-        datatable(dt,
-                  selection = list(target = 'row'),
-                  options = list(
-                      autoWidth = FALSE,
-                      align = 'center',
-                      sDom = '<"top">rt<"bottom">ip',
-                      scrollX = TRUE,
-                      info = TRUE,
-                      paging = TRUE,
-                      oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
-                      ordering = T,
-                      pageLength = 10
-                  ),
-                  filter = "top",
-                  colnames = paste0(colnames(dt),
-                                    " (",
-                                    cbind(lapply(dt, class)),
-                                    ")")
-        )
-    })
     plotlygraph <- renderPlotly({
         validate(
             need(input$graphButton >= 1, message = FALSE),
@@ -454,77 +425,157 @@ function(input, output) {
             layout(title = "Your graph",
                    xaxis = list(title = rv$ColnameX),
                    yaxis = list(title = rv$ColnameY)
-                   )
-    })
-    cluster_table <- renderPlotly({
-        validate(
-            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-            errorClass = "cluster_err"
-        )
-        df <- rv$clusterTable
-        plot_ly(df,
-                type = "scatter",
-                x = df[, input$cluster_x],
-                y = df[, input$cluster_y],
-                color = rv$tableCluster$cluster) %>%
-            layout(title = "Cluster graph",
-                   xaxis = list(title = input$cluster_x),
-                   yaxis = list(title = input$cluster_y)
             )
     })
-    cluster_barplot <- renderPlotly({
-        validate(
-            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-            errorClass = "cluster_barplot_err"
-        )
-        plot_ly(rv$clusterBar,
-                type = "bar",
-                x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
-                y = rv$clusterBar[,"Cluster size"]) %>%
-            layout(title = "Number of items in each cluster",
-                   xaxis = list(title = "Cluster no."),
-                   yaxis = list(title = "Cluster size")
-            )
+    
+    
+    observeEvent(input$clusterButton, { 
+        if(input$cluster_alg == "EM" || input$cluster_alg == "K-means") {
+            cluster_user_table <- DT::renderDataTable({
+                validate(
+                    need(!is.null(rv$tableCluster$cluster)
+                         & input$cluster_alg == "EM"
+                         || input$cluster_alg == "K-means",
+                         message = FALSE),
+                    errorClass = "main_table data"
+                )
+                dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
+                dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
+                datatable(dt,
+                          selection = list(target = 'row'),
+                          options = list(
+                              autoWidth = FALSE,
+                              align = 'center',
+                              sDom = '<"top">rt<"bottom">ip',
+                              scrollX = TRUE,
+                              info = TRUE,
+                              paging = TRUE,
+                              oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
+                              ordering = T,
+                              pageLength = 10
+                          ),
+                          filter = "top",
+                          colnames = paste0(colnames(dt),
+                                            " (",
+                                            cbind(lapply(dt, class)),
+                                            ")")
+                )
+            })
+    output$clusterUserTable <- cluster_user_table
+        }
     })
-    confusion_matrix <- DT::renderDataTable({
-        validate(
-            need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-            errorClass = "cluster_barplot_err"
-        )
-        dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-        dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-        testidx <- which(1:length(dt[,1])%%5 == 0)
-        rvtrain <- dt[-testidx,]
-        rvtest <- dt[testidx,]
-        model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
-        prediction <- predict(model, newdata=rvtest, type="class")
-        dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
-        colnames(dt) <- levels(rv$tableCluster$cluster)
-        dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
-        
-        datatable(dt,
-                  rownames = FALSE,
-                  selection = list(target = 'none'),
-                  filter = "none",
-                  options = list(dom = "t"))
-        
+    observeEvent(input$clusterButton, { 
+        if(input$cluster_alg == "EM" || input$cluster_alg == "K-means") {
+            cluster_table <- renderPlotly({
+                validate(
+                    need(input$clusterButton >= 1
+                         & !is.null(rv$tableCluster$cluster)
+                         & input$cluster_alg == "EM"
+                         || input$cluster_alg == "K-means",
+                         message = FALSE),
+                    errorClass = "cluster_err"
+                )
+                df <- rv$clusterTable
+                plot_ly(df,
+                        type = "scatter",
+                        x = df[, input$cluster_x],
+                        y = df[, input$cluster_y],
+                        color = rv$tableCluster$cluster) %>%
+                    layout(title = "Cluster graph",
+                           xaxis = list(title = input$cluster_x),
+                           yaxis = list(title = input$cluster_y)
+                    )
+            })
+    output$clusterTable <- cluster_table
+        }
+    })
+    observeEvent(input$clusterButton, { 
+        if(input$cluster_alg == "EM" || input$cluster_alg == "K-means") {
+            cluster_barplot <- renderPlotly({
+                validate(
+                    need(input$clusterButton >= 1
+                         & !is.null(rv$tableCluster$cluster)
+                         & input$cluster_alg == "EM"
+                         || input$cluster_alg == "K-means",
+                         message = FALSE),
+                    errorClass = "cluster_barplot_err"
+                )
+                plot_ly(rv$clusterBar,
+                        type = "bar",
+                        x = as.factor(rv$clusterBar[,"Cluster no."]),   # no floats on x axis
+                        y = rv$clusterBar[,"Cluster size"]) %>%
+                    layout(title = "Number of items in each cluster",
+                           xaxis = list(title = "Cluster no."),
+                           yaxis = list(title = "Cluster size")
+                    )
+            })
+    output$clusterBarplot <- cluster_barplot
+        }
+    })
+    observeEvent(input$clusterButton, { 
+        if(input$cluster_alg == "EM" || input$cluster_alg == "K-means") {
+            confusion_matrix <- DT::renderDataTable({
+                validate(
+                    need(input$clusterButton >= 1
+                         & !is.null(rv$tableCluster$cluster)
+                         & input$cluster_alg == "EM"
+                         || input$cluster_alg == "K-means",
+                         message = FALSE),
+                    errorClass = "cluster_barplot_err"
+                )
+                dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
+                dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
+                testidx <- which(1:length(dt[,1])%%5 == 0)
+                rvtrain <- dt[-testidx,]
+                rvtest <- dt[testidx,]
+                model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
+                prediction <- predict(model, newdata=rvtest, type="class")
+                dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
+                colnames(dt) <- levels(rv$tableCluster$cluster)
+                dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
+                
+                datatable(dt,
+                          rownames = FALSE,
+                          selection = list(target = 'none'),
+                          filter = "none",
+                          options = list(dom = "t"))
+                
+            })
+            output$confusion_matrix <- confusion_matrix
+        }
     })
     
-    hclustplot <- renderPlot({
-        validate(
-            need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
-            errorClass = "hclust_err"
-        )
-        clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
-        clusDendro <- dendrapply(rv$hclust, colLab)
-        clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
-                                                                                                  ylab = paste(input$hcmetric, "distance"))
-        clusDendro %>% rect.dendrogram(k=input$hc_k)
-        abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
-    })
-
+    observeEvent(input$clusterButton, {
+        if(input$cluster_alg == "Hierarchical") {
+            hclustplot <- renderPlot({
+                validate(
+                    need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
+                    errorClass = "hclust_err"
+                )
+                clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
+                clusDendro <- dendrapply(rv$hclust, colLab)
+                clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
+                                                                                                          ylab = paste(input$hcmetric, "distance"))
+                clusDendro %>% rect.dendrogram(k=input$hc_k)
+                abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
+            })
+    output$hclustplot <- hclustplot
+        }
+})
     
-   
+    clustTab <- renderUI({
+        if(input$cluster_alg == "Hierarchical") {
+            material_card(plotOutput("hclustplot"))
+        }
+        else ({ material_card(
+            plotlyOutput("clusterTable"),
+            plotlyOutput("clusterBarplot"),
+            DT::dataTableOutput("clusterUserTable"),
+            h5("Confusion matrix"),
+            DT::dataTableOutput("confusion_matrix")
+        )
+        })
+    })
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -580,19 +631,15 @@ function(input, output) {
             layout(title = "PCA")
     })
     
-    output$hclustplot <- hclustplot
-    output$confusion_matrix <- confusion_matrix
+    output$clustTab <- clustTab
     output$pca_explained <- plotlyPCA_explained
     output$pca_buttons <- pca_buttons
     output$plotlyPCA <- plotlyPCA
     output$cluster_buttons <- button_cluster
-    output$clusterBarplot <- cluster_barplot
-    output$clusterTable <- cluster_table
     output$main_user_table <- main_user_table
     output$handsontypes <- types_table
     output$render_button <- button_render
     output$graph_buttons <- button_graph
     output$classification_buttons <- classification_buttons
     output$plotlyGraph <- plotlygraph
-    output$clusterUserTable <- cluster_user_table
 }
