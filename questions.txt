@@ -28,6 +28,12 @@ linear model selection and regularization
 
 
 to do:
+hclust num of clusters when cutting on height
+PC 1-2-3-4 в табличках 
+conpute distance matrix (on metric) button
+tab3 hierach. distance matrix only on "perform" 1 time
+hierarch add method
+static table on tab 3
 getting and cleaning data
 4 tab - classification
 
