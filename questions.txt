@@ -1,10 +1,13 @@
-﻿закінчити курс по статистиці
-лінійні / нелінійні моделі, логістична регресія
-закінчити класифікацію і confusion matrix
+﻿закінчити класифікацію і 
 підключити лібу shinyBS
 test and train of confusion matrix //todo: add overall accuracy
 
 done: 
+confusion matrix
+? вибір алгоритми кластеризації
+лінійні / нелінійні моделі, логістична регресія
+закінчити курс по статистиці
+render types_table after reupload
 practical machine learning   
 set of checkboxes on tab 4 - partly done
 
@@ -21,7 +24,11 @@ machine learning
 After: linear regression
 
 linear model selection and regularization
+
+
+
 to do:
+getting and cleaning data
 4 tab - classification
 
 логістична регресія, decision tree, random forest (rpart, randomForest and lda) Gradiant boosting > RF ? 
@@ -31,15 +38,15 @@ support vector machine
 
 
 lib caret cross-validation train()
-getting and cleaning data
 
-render types_table after reupload
+
+
 
 
 After: js libs into R
 підключити джс ліби в Р
 Within cluster sum of squares by total руками порахувати
-? вибір алгоритми кластеризації
+
 
 
 
@@ -71,7 +78,7 @@ if(any(sapply(rv$userTable, is.factor))) {
 		
 
 
-preProcess(training, ...)
+preProcess(x, method = c("center", "scale") ...)
 scale(...)                   -- same?
 
 
@@ -91,3 +98,10 @@ especially when K = 2.
 separated, and Gaussian assumptions are reasonable. Also
 when K > 2.
 • Naive Bayes is useful when p is very large.
+
+
+
+hclust <- winequality_white %>% dist %>% hclust %>% as.dendrogram
+hclust %>% color_branches(k=3) %>% plot(main = "Dendrogram")
+hclust %>% rect.dendrogram(k=3)
+! rect.hclust error: k must be between 2 and 0

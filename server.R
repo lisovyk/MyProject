@@ -37,7 +37,7 @@ function(input, output) {
     colLab <- function(n) {
         if (is.leaf(n)) {
             a <- attributes(n)
-            labCol <- dendLabelColors[clusMember[which(names(clusMember) == a$label)]]
+            labCol <- dendLabelColors[rv$clusMember[which(names(rv$clusMember) == a$label)]]
             attr(n, "nodePar") <- c(a$nodePar, lab.col = labCol)
         }
         n
@@ -535,7 +535,7 @@ function(input, output) {
                     need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
                     errorClass = "hclust_err"
                 )
-                clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
+                rv$clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
                 clusDendro <- dendrapply(rv$hclust, colLab)
                 clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
                                                                                                           ylab = paste(input$hcmetric, "distance"))
