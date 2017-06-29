@@ -72,7 +72,7 @@ material_page(
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#classification_tab'",
-            uiOutput("classification_button")
+            uiOutput("classification_buttons")
         )
     ),
     material_tabs(
@@ -108,6 +108,8 @@ material_page(
         plotlyOutput("pca_explained")
     ),
     material_tab_content(
-        tab_id = "classification_tab"
+        tab_id = "classification_tab",
+        h5("Confusion matrix"),
+        DT::dataTableOutput("confusion_matrix")
     )
 )
