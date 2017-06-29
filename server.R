@@ -528,7 +528,6 @@ function(input, output) {
                 rv$tableCluster$cluster = cutree(as.dendrogram(rv$hclust), input$hc_k)
                 clusDendro <- dendrapply(as.dendrogram(rv$hclust), colLab)
                 clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
-                                                                                                          hang = -1,
                                                                                                           ylab = paste(input$hcmetric, "distance"))
                 clusDendro %>% rect.dendrogram(k=input$hc_k, border = 8, lty = 5, lwd = 2)
                 abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
@@ -557,10 +556,32 @@ function(input, output) {
     })
     
 
+    
+    # Render clust algorithms
+    clustTab <- renderUI({
+        validate(
+            need(length(input$cluster_alg) != 0, message = FALSE),
+            errorClass = "cluster button err"
+        )
+        if(input$cluster_alg == "Hierarchical") {
+            material_card(
+                plotOutput("hclustplot"),
+                plotOutput("hclustHeights")
+            )
+        } else ({ 
+            material_card(
+                plotlyOutput("clusterTable"),
+                plotlyOutput("clusterBarplot"),
+                DT::dataTableOutput("clusterUserTable")
+            )
+        })
+    })
+    
+    # Classification
     observeEvent(input$confMat, {
         confusion_matrix <- DT::renderDataTable({
             validate(
-                need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
+                need(input$confMat >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
                 errorClass = "cluster_barplot_err"
             )
             dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
@@ -582,27 +603,7 @@ function(input, output) {
             
         })
         output$confusion_matrix <- confusion_matrix
-    })    
-    
-    # Render clust algorithms
-    clustTab <- renderUI({
-        validate(
-            need(length(input$cluster_alg) != 0, message = FALSE),
-            errorClass = "cluster button err"
-        )
-        if(input$cluster_alg == "Hierarchical") {
-            material_card(
-                plotOutput("hclustplot"),
-                plotOutput("hclustHeights")
-            )
-        } else ({ 
-            material_card(
-                plotlyOutput("clusterTable"),
-                plotlyOutput("clusterBarplot"),
-                DT::dataTableOutput("clusterUserTable")
-            )
-        })
-    })
+    })  
     
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
