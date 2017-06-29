@@ -5,6 +5,8 @@ hierarch add methods
 hclust num of clusters when cutting on height
 tab3 hierach. distance matrix only on "perform" 1 time
 conf matrix to classification
+PC 1-2-3-4 в табличках 
+compute distance matrix (on metric) button
 
 leave-one-out cross-validation; k-fold valid
 bootstraping
@@ -16,8 +18,8 @@ linear model selection and regularization
 
 
 to do:
-PC 1-2-3-4 в табличках 
-compute distance matrix (on metric) button
+
+
 
 
 static table on tab 3

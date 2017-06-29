@@ -657,7 +657,32 @@ function(input, output) {
                 color = as.factor(rv$tableCluster$cluster)) %>%
             layout(title = "PCA")
     })
-    
+    PCtable <- renderDataTable({
+        validate(
+            need(input$pcaButton >= 1, message = FALSE),
+            errorClass = "PCA_plotly_err"
+        )
+        if(length(rv$pca_output) > 4){
+        df <- rv$pca_output[,1:4]
+        } else { df <- rv$pca_output}
+        datatable(df,
+                  selection = list(target = 'row'),
+                  options = list(
+                      autoWidth = FALSE,
+                      align = 'center',
+                      sDom = '<"top">rt<"bottom">ip',
+                      scrollX = TRUE,
+                      info = TRUE,
+                      paging = TRUE,
+                      oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
+                      ordering = T,
+                      pageLength = 10
+                  ),
+                  filter = "top"
+        )
+        
+    })
+    output$PCtable <- PCtable
     output$button_cluster_type <- button_cluster_type
     output$classification_buttons <- classification_buttons
     output$cluster_buttons <- button_cluster

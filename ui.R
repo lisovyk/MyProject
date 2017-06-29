@@ -105,7 +105,8 @@ material_page(
     material_tab_content(
         tab_id = "pca_tab",
         plotlyOutput("plotlyPCA"),
-        plotlyOutput("pca_explained")
+        plotlyOutput("pca_explained"),
+        dataTableOutput("PCtable")
     ),
     material_tab_content(
         tab_id = "classification_tab",
