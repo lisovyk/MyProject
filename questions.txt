@@ -1,19 +1,12 @@
-﻿закінчити курс по статистиці
-лінійні / нелінійні моделі, логістична регресія
-закінчити класифікацію і confusion matrix
-підключити лібу shinyBS
-test and train of confusion matrix //todo: add overall accuracy
+﻿test and train of confusion matrix //todo: add overall accuracy
 
 done: 
-practical machine learning   
-set of checkboxes on tab 4 - partly done
-
-ml datasets download datasets classification, covertype data set
-pca1/pca2 on 3 tab 
-pca explained on 4 tab (bug: no more than 12 obs shown)
-checkbox "apply normalization" on all numerics 3rd block under typetable
-
-added EMClustering option
+hierarch add methods
+hclust num of clusters when cutting on height
+tab3 hierach. distance matrix only on "perform" 1 time
+conf matrix to classification
+PC 1-2-3-4 в табличках 
+compute distance matrix (on metric) button
 
 leave-one-out cross-validation; k-fold valid
 bootstraping
@@ -21,7 +14,17 @@ machine learning
 After: linear regression
 
 linear model selection and regularization
+
+
+
 to do:
+
+
+
+
+static table on tab 3
+getting and cleaning data
+
 4 tab - classification
 
 логістична регресія, decision tree, random forest (rpart, randomForest and lda) Gradiant boosting > RF ? 
@@ -31,17 +34,7 @@ support vector machine
 
 
 lib caret cross-validation train()
-getting and cleaning data
-
-render types_table after reupload
-
-
-After: js libs into R
-підключити джс ліби в Р
 Within cluster sum of squares by total руками порахувати
-? вибір алгоритми кластеризації
-
-
 
 
 
@@ -68,11 +61,6 @@ if(any(sapply(rv$userTable, is.factor))) {
 		}
 	}
 }
-		
-
-
-preProcess(training, ...)
-scale(...)                   -- same?
 
 
 

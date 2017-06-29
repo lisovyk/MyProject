@@ -37,7 +37,7 @@ function(input, output) {
     colLab <- function(n) {
         if (is.leaf(n)) {
             a <- attributes(n)
-            labCol <- dendLabelColors[clusMember[which(names(clusMember) == a$label)]]
+            labCol <- dendLabelColors[rv$tableCluster$cluster[which(names(rv$tableCluster$cluster) == a$label)]]
             attr(n, "nodePar") <- c(a$nodePar, lab.col = labCol)
         }
         n
@@ -135,6 +135,7 @@ function(input, output) {
             need(length(input$cluster_alg) != 0, message = FALSE),
             errorClass = "cluster button err"
         )
+
         if(input$cluster_alg == "K-means") {
             material_card(
                 material_row(
@@ -173,7 +174,7 @@ function(input, output) {
                     value = 2
                 )
             )
-            
+        
         } else if (input$cluster_alg == "EM") {
             material_card(
                 selectInput(
@@ -197,8 +198,14 @@ function(input, output) {
                 )
             )
             
+        
+            
         } else if(input$cluster_alg == "Hierarchical") {
             material_card(
+                actionButton(
+                    inputId = "clusterUpdate",
+                    label = "Update"
+                ),
                 numericInput(
                     inputId = "hc_k",
                     label = "Number of Leaves",
@@ -211,6 +218,13 @@ function(input, output) {
                     label = "Metric",
                     choices = c("euclidean", "manhattan", "gower"),
                     selected = "euclidean"
+                ),
+                selectInput(
+                    inputId = "hcmethod",
+                    label = "Method",
+                    choices = c("ward.D", "ward.D2", "single", "complete",
+                                "average", "mcquitty", "median", "centroid"),
+                    selected = "complete"
                 )
             )
         }
@@ -245,8 +259,10 @@ function(input, output) {
     classification_buttons <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
-                
-                
+                actionButton(
+                    inputId = "confMat",
+                    label = "ConfMatrix"
+                )
             )
         }
     })
@@ -334,7 +350,9 @@ function(input, output) {
         }
         
         if(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical") {
-            rv$hclust <- rv$clusterTable %>% daisy(metric = input$hcmetric) %>% hclust %>% as.dendrogram
+            rv$hclust <- rv$clusterTable %>%
+                daisy(metric = input$hcmetric) %>%
+                hclust(method = input$hcmethod)
             
         }
     })
@@ -434,8 +452,8 @@ function(input, output) {
             )
     })
     
-    #EM and K-means
-    observeEvent(input$clusterButton, { 
+    # Clustering
+    observeEvent(c(input$clusterButton, input$clusterUpdate), { 
         if(input$cluster_alg == "EM" || input$cluster_alg == "K-means") {
             cluster_user_table <- DT::renderDataTable({
                 validate(
@@ -500,51 +518,71 @@ function(input, output) {
             })
             output$clusterBarplot <- cluster_barplot
             
-            confusion_matrix <- DT::renderDataTable({
-                validate(
-                    need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-                    errorClass = "cluster_barplot_err"
-                )
-                dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-                dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-                testidx <- which(1:length(dt[,1])%%5 == 0)
-                rvtrain <- dt[-testidx,]
-                rvtest <- dt[testidx,]
-                model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
-                prediction <- predict(model, newdata=rvtest, type="class")
-                dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
-                colnames(dt) <- levels(rv$tableCluster$cluster)
-                dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
-                
-                datatable(dt,
-                          rownames = FALSE,
-                          selection = list(target = 'none'),
-                          filter = "none",
-                          options = list(dom = "t"))
-                
+        }
+        if(input$cluster_alg == "Hierarchical") {
+            validate(
+                need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
+                errorClass = "hclust_err"
+            )
+            hclustplot <- renderPlot({
+                rv$tableCluster$cluster = cutree(as.dendrogram(rv$hclust), input$hc_k)
+                clusDendro <- dendrapply(as.dendrogram(rv$hclust), colLab)
+                clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
+                                                                                                          hang = -1,
+                                                                                                          ylab = paste(input$hcmetric, "distance"))
+                clusDendro %>% rect.dendrogram(k=input$hc_k, border = 8, lty = 5, lwd = 2)
+                abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
             })
-            output$confusion_matrix <- confusion_matrix
+            hclustHeights <- renderPlot({
+                hghts <- rv$hclust$height
+                i <- which.max(diff(rv$hclust$height))
+                split_height <- (hghts[i]*0.7+hghts[i+1]*0.3)
+                par(mfrow=c(1,2))
+                plot(density((hghts)), main="Density of branching heights", xlab="", ylab="")
+                abline(v = split_height, col="red", lty=2)
+                
+                seq <- max(0,floor(min(hghts))):floor(max(hghts))
+                num <- sapply(seq, function(x){length(unique(cutree(rv$hclust,h=x)))})
+                plot(seq, num, ylim=c(0,max(num)), xaxt="n", yaxt="n",
+                     main="num of clusters (y) when cutting at height (x)",
+                     xlab="", ylab="")
+                text(seq, num, labels = num, cex= 1.3, pos=4)
+                axis(1,at=seq)
+                axis(2,at=0:max(num))
+                abline(v = split_height, col="red", lty=2)
+            })
+            output$hclustplot <- hclustplot
+            output$hclustHeights <- hclustHeights
         }
     })
     
-    #Hierarchical
-    observeEvent(input$clusterButton, {
-        if(input$cluster_alg == "Hierarchical") {
-            hclustplot <- renderPlot({
-                validate(
-                    need(input$clusterButton >= 1 & input$cluster_alg == "Hierarchical", message = FALSE),
-                    errorClass = "hclust_err"
-                )
-                clusMember = cutree(as.dendrogram(rv$hclust), input$hc_k)
-                clusDendro <- dendrapply(rv$hclust, colLab)
-                clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
-                                                                                                          ylab = paste(input$hcmetric, "distance"))
-                clusDendro %>% rect.dendrogram(k=input$hc_k)
-                abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
-            })
-            output$hclustplot <- hclustplot
-        }
-    })
+
+    observeEvent(input$confMat, {
+        confusion_matrix <- DT::renderDataTable({
+            validate(
+                need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
+                errorClass = "cluster_barplot_err"
+            )
+            dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
+            dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
+            testidx <- which(1:length(dt[,1])%%5 == 0)
+            rvtrain <- dt[-testidx,]
+            rvtest <- dt[testidx,]
+            model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
+            prediction <- predict(model, newdata=rvtest, type="class")
+            dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
+            colnames(dt) <- levels(rv$tableCluster$cluster)
+            dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
+            
+            datatable(dt,
+                      rownames = FALSE,
+                      selection = list(target = 'none'),
+                      filter = "none",
+                      options = list(dom = "t"))
+            
+        })
+        output$confusion_matrix <- confusion_matrix
+    })    
     
     # Render clust algorithms
     clustTab <- renderUI({
@@ -553,14 +591,15 @@ function(input, output) {
             errorClass = "cluster button err"
         )
         if(input$cluster_alg == "Hierarchical") {
-            material_card( plotOutput("hclustplot") )
+            material_card(
+                plotOutput("hclustplot"),
+                plotOutput("hclustHeights")
+            )
         } else ({ 
             material_card(
                 plotlyOutput("clusterTable"),
                 plotlyOutput("clusterBarplot"),
-                DT::dataTableOutput("clusterUserTable"),
-                h5("Confusion matrix"),
-                DT::dataTableOutput("confusion_matrix")
+                DT::dataTableOutput("clusterUserTable")
             )
         })
     })
@@ -578,7 +617,6 @@ function(input, output) {
             toggleClass(id = "text_caution", class = "greentext")
         }
         tags$i(rv$output)
-        
     })
     output$fileUploadedBool <- reactive({
         return(!is.null(user_table()))
@@ -619,7 +657,32 @@ function(input, output) {
                 color = as.factor(rv$tableCluster$cluster)) %>%
             layout(title = "PCA")
     })
-    
+    PCtable <- renderDataTable({
+        validate(
+            need(input$pcaButton >= 1, message = FALSE),
+            errorClass = "PCA_plotly_err"
+        )
+        if(length(rv$pca_output) > 4){
+        df <- rv$pca_output[,1:4]
+        } else { df <- rv$pca_output}
+        datatable(df,
+                  selection = list(target = 'row'),
+                  options = list(
+                      autoWidth = FALSE,
+                      align = 'center',
+                      sDom = '<"top">rt<"bottom">ip',
+                      scrollX = TRUE,
+                      info = TRUE,
+                      paging = TRUE,
+                      oLanguage = list("sZeroRecords" = "", "sEmptyTable" = ""),
+                      ordering = T,
+                      pageLength = 10
+                  ),
+                  filter = "top"
+        )
+        
+    })
+    output$PCtable <- PCtable
     output$button_cluster_type <- button_cluster_type
     output$classification_buttons <- classification_buttons
     output$cluster_buttons <- button_cluster
