@@ -18,11 +18,16 @@ linear model selection and regularization
 
 
 to do:
+вибір змінної на прогноз
+вибір класифікатор (рфорест(mtry+ntree), десіжн трі*)
+вибір %змінних на трейн/тест
+accuracy test/train 
 
+logist. regression *
+mtry in randomForest for user input
+accuracy
 
-
-
-static table on tab 3
+?  static table on tab 3
 getting and cleaning data
 
 4 tab - classification
@@ -65,7 +70,7 @@ if(any(sapply(rv$userTable, is.factor))) {
 
 
 
-		
+
 selfedu: 
 learn S3 / S4 classes
 https://cran.r-project.org/web/packages/EMCluster/EMCluster.pdf
