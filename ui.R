@@ -111,6 +111,8 @@ material_page(
     material_tab_content(
         tab_id = "classification_tab",
         h5("Confusion matrix"),
-        DT::dataTableOutput("confusion_matrix")
+        DT::dataTableOutput("confusion_matrix"),
+        h5("Accuracy"),
+        tableOutput("confMatAcc")
     )
 )

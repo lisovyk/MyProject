@@ -15,8 +15,8 @@ function(input, output) {
     })
     
     observeEvent(input$uploaded_file, {
-        rv$user_table_init <- data.frame(user_table())
-        rv$userTable <- data.frame(user_table())
+        rv$user_table_init <- as.data.frame(user_table())
+        rv$userTable <- as.data.frame(user_table())
     })
     
     #functions
@@ -262,16 +262,45 @@ function(input, output) {
                 actionButton(
                     inputId = "confMat",
                     label = "ConfMatrix"
+                ),
+                selectInput(
+                    inputId = "predictVal",
+                    label = "Predict value",
+                    choices = rv$AvailableColsClass
+                ),
+                sliderInput(
+                    inputId = "percentInTrain",
+                    label = "Train model %",
+                    min = 60,
+                    max = 95,
+                    value = 80
+                ),
+                numericInput(
+                    inputId = "nTree",
+                    label = "nTree",
+                    value = 300,
+                    min = 100,
+                    max = 5000,
+                    step = 50
+                ),
+                numericInput(
+                    inputId = "mtry",
+                    label = "mtry",
+                    value = 1,
+                    min = 1,
+                    max = 50
                 )
+                
             )
         }
     })
     
+    observe(print(rv$AvailableColsClass))
     #buttons events
     observeEvent(c(input$button_table_convertion), {
         if(input$button_table_convertion >= 1){
             if(!input$checkbox_delete_rows){
-                rv$user_table_init <- data.frame(user_table())
+                rv$user_table_init <- as.data.frame(user_table())
             }
             rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
             if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
@@ -320,7 +349,7 @@ function(input, output) {
         }
     })
     observeEvent(rv$userTable, {
-        rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
+        rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
     observeEvent(c(input$clusterButton), {
         if(input$clusterButton >= 1 & input$cluster_alg == "K-means") {
@@ -330,7 +359,7 @@ function(input, output) {
                                       iter.max = input$cluster_itermax)
             rv$tableCluster$cluster <- as.factor(rv$tableCluster$cluster)
             
-            rv$clusterBar <- data.frame(1:length(rv$tableCluster$size))
+            rv$clusterBar <- as.data.frame(1:length(rv$tableCluster$size))
             for(i in 1:length(rv$tableCluster$size)) {
                 rv$clusterBar[i,2] <- rv$tableCluster$size[i]
             }
@@ -342,7 +371,7 @@ function(input, output) {
                                      nclass = input$cluster_number)
             rv$tableCluster$cluster <- as.factor(rv$tableCluster$class)
             
-            rv$clusterBar <- data.frame(1:length(rv$tableCluster$nc))
+            rv$clusterBar <- as.data.frame(1:length(rv$tableCluster$nc))
             for(i in 1:length(rv$tableCluster$nc)) {
                 rv$clusterBar[i,2] <- rv$tableCluster$nc[i]
             }
@@ -354,6 +383,24 @@ function(input, output) {
                 daisy(metric = input$hcmetric) %>%
                 hclust(method = input$hcmethod)
             
+        }
+    })
+    observeEvent(c(input$confMat), {
+        if(input$confMat >=1) {
+                dt <- rv$userTable
+                smp_size <- floor(as.numeric(paste0("0.", input$percentInTrain)) * nrow(dt))
+                testidx <- sample(seq_len(nrow(dt)), size = smp_size)
+                train <- dt[-testidx,]
+                test <- dt[testidx,]
+                predictVal <- input$predictVal
+                model <- randomForest(as.formula(paste0(input$predictVal, " ~ .")),
+                                      data=train,
+                                      nTree = input$nTree,
+                                      mtry = input$mtry)
+                prediction <- predict(model, newdata=test, type="class")
+                dt <- as.data.frame.matrix(table(prediction, test[[predictVal]]))
+                rv$confMat <- dt
+                rv$confMatAcc <- postResample(prediction, test[[predictVal]]) %>% rbind()  # accuracy
         }
     })
     
@@ -369,9 +416,10 @@ function(input, output) {
         }
     })
     #Available names and colors on dropdowns
-    observeEvent(rv$userTable, {
+    observeEvent(c(rv$userTable, rv$clusterTable), {
         rv$AvailableCols <- character(0)
         rv$AvailableColoring <- character(0)
+        rv$AvailableColsClass <- character(0)
         ColClass <- sapply(rv$userTable, class)
         for(i in 1:length(ColClass)) {
             if(ColClass[i] == "numeric" || ColClass[i] == "integer"){
@@ -380,8 +428,10 @@ function(input, output) {
             if(ColClass[i] != "character") {
                 rv$AvailableColoring <- c(rv$AvailableColoring, names(ColClass[i]))
             }
+            if(ColClass[i] == "factor"){
+                rv$AvailableColsClass <- c(rv$AvailableColsClass, names(ColClass[i]))
+            }
         }
-        
     })
     
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
@@ -577,34 +627,18 @@ function(input, output) {
         })
     })
     
-    # Classification
-    observeEvent(input$confMat, {
-        confusion_matrix <- DT::renderDataTable({
-            validate(
-                need(input$confMat >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-                errorClass = "cluster_barplot_err"
-            )
-            dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-            dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-            testidx <- which(1:length(dt[,1])%%5 == 0)
-            rvtrain <- dt[-testidx,]
-            rvtest <- dt[testidx,]
-            model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
-            prediction <- predict(model, newdata=rvtest, type="class")
-            dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
-            colnames(dt) <- levels(rv$tableCluster$cluster)
-            dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
-            
-            datatable(dt,
-                      rownames = FALSE,
-                      selection = list(target = 'none'),
-                      filter = "none",
-                      options = list(dom = "t"))
-            
-        })
-        output$confusion_matrix <- confusion_matrix
-    })  
     
+    # Classification
+    confusion_matrix <- DT::renderDataTable({
+        datatable(rv$confMat,
+                  rownames = FALSE,
+                  selection = list(target = 'none'),
+                  filter = "none",
+                  options = list(dom = "t"))
+    })
+
+    output$confusion_matrix <- confusion_matrix
+
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -624,6 +658,8 @@ function(input, output) {
     })
     outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
     
+    confMatAcc <- renderTable({ rv$confMatAcc }, digits = 5)
+    output$confMatAcc <- confMatAcc
     # pca
     observeEvent(input$clusterButton, {
         data <- rv$userTable[sapply(rv$userTable, is.numeric)]
@@ -683,6 +719,7 @@ function(input, output) {
         )
         
     })
+    
     output$PCtable <- PCtable
     output$button_cluster_type <- button_cluster_type
     output$classification_buttons <- classification_buttons
