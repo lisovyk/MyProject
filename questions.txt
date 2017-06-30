@@ -1,12 +1,11 @@
 ﻿test and train of confusion matrix //todo: add overall accuracy
 
 done: 
-hierarch add methods
-hclust num of clusters when cutting on height
-tab3 hierach. distance matrix only on "perform" 1 time
-conf matrix to classification
-PC 1-2-3-4 в табличках 
-compute distance matrix (on metric) button
+fixed "X.colname" in main data table (data.frame to as.data.frame)
+вибір змінної на прогноз
+вибір %змінних на трейн/тест
+accuracy test/train(?) 
+
 
 leave-one-out cross-validation; k-fold valid
 bootstraping
@@ -18,10 +17,15 @@ linear model selection and regularization
 
 
 to do:
-вибір змінної на прогноз
+library(tree) for decision trees
+пробіли в colnames == error? видаляти special char.
+caret - variables important
+add conf matrix for RF train/test; decision tree
+
+
 вибір класифікатор (рфорест(mtry+ntree), десіжн трі*)
-вибір %змінних на трейн/тест
-accuracy test/train 
+
+
 
 logist. regression *
 mtry in randomForest for user input

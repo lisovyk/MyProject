@@ -135,7 +135,6 @@ function(input, output) {
             need(length(input$cluster_alg) != 0, message = FALSE),
             errorClass = "cluster button err"
         )
-
         if(input$cluster_alg == "K-means") {
             material_card(
                 material_row(
@@ -259,6 +258,22 @@ function(input, output) {
     classification_buttons <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
+                selectInput(
+                    inputId = "classType",
+                    label = "Classifier",
+                    choices = c("Confusion Matrix", "Decision Trees")
+                )
+            )
+        }
+    })
+    
+    button_classificator_type <- renderUI({
+        validate(
+            need(length(input$classType) != 0, message = FALSE),
+            errorClass = "cluster button err"
+        )
+        if(input$classType == "Confusion Matrix") {
+            material_card(
                 actionButton(
                     inputId = "confMat",
                     label = "ConfMatrix"
@@ -292,10 +307,23 @@ function(input, output) {
                 )
                 
             )
+        } 
+        else if(input$classType == "Decision Trees") {
+            material_card(
+                actionButton(
+                    inputId = "decTree",
+                    label = "DecisionTrees"
+                ),
+                selectInput(
+                    inputId = "predictVal",
+                    label = "Predict value",
+                    choices = rv$AvailableColsClass
+                )
+            )
         }
     })
     
-    observe(print(rv$AvailableColsClass))
+
     #buttons events
     observeEvent(c(input$button_table_convertion), {
         if(input$button_table_convertion >= 1){
@@ -348,9 +376,6 @@ function(input, output) {
             }
         }
     })
-    observeEvent(rv$userTable, {
-        rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
-    })
     observeEvent(c(input$clusterButton), {
         if(input$clusterButton >= 1 & input$cluster_alg == "K-means") {
             rv$tableCluster <- kmeans(rv$clusterTable,
@@ -392,7 +417,8 @@ function(input, output) {
                 testidx <- sample(seq_len(nrow(dt)), size = smp_size)
                 train <- dt[-testidx,]
                 test <- dt[testidx,]
-                predictVal <- input$predictVal
+                
+                predictVal <- paste0("`", input$predictVal, "`")
                 model <- randomForest(as.formula(paste0(input$predictVal, " ~ .")),
                                       data=train,
                                       nTree = input$nTree,
@@ -403,7 +429,14 @@ function(input, output) {
                 rv$confMatAcc <- postResample(prediction, test[[predictVal]]) %>% rbind()  # accuracy
         }
     })
-    
+    observeEvent(c(input$decTree), {
+        if(is.factor(rv$userTable[[input$predictVal]])) {
+            rv$ctree <- ctree(as.formula(paste0(input$predictVal, " ~ .")), data = rv$userTable)
+        }
+    })
+    observeEvent(rv$userTable, {
+        rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
+    })
     # Unavailability of button if no file uploaded
     observe({
         if (!is.null(input$clusterButton)) {
@@ -630,15 +663,48 @@ function(input, output) {
     
     # Classification
     confusion_matrix <- DT::renderDataTable({
+        validate(
+            need(input$classType == "Confusion Matrix", message = FALSE),
+            errorClass = "plotly_err"
+        )
         datatable(rv$confMat,
                   rownames = FALSE,
                   selection = list(target = 'none'),
                   filter = "none",
                   options = list(dom = "t"))
     })
-
     output$confusion_matrix <- confusion_matrix
-
+    confMatAcc <- renderTable({ 
+        validate(
+            need(input$classType == "Confusion Matrix", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        rv$confMatAcc }, digits = 5)
+    output$confMatAcc <- confMatAcc
+    
+    cuttree <- renderPlot({
+        validate(
+            need(input$classType == "Decision Trees" & input$decTree >= 1, message = FALSE),
+            errorClass = "plotly_err"
+        )
+        plot(rv$ctree)
+    })
+    output$cuttree <- cuttree
+    
+    
+    # if "' in colnames
+    observeEvent(rv$userTable, {
+        for(i in names(rv$userTable)) {
+            a <- strsplit(i,"")
+            for(j in a[[1]]){
+                if(j == "\"" | j == "\'"){
+                    rv$quotesBool <- TRUE
+                    break()
+                }
+            }
+        }
+    })
+    rv$quotesBool <- FALSE
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -648,9 +714,14 @@ function(input, output) {
             rv$output <- paste("Careful! You have NA values in dataset.")
             toggleClass(id = "text_caution", class = "redtext")
         }
+        if(rv$quotesBool == TRUE){
+            rv$output <- paste("You have quotes in colnames, it will cause problems.")
+            toggleClass(id = "text_caution", class = "redtext")
+        }
         if(rv$output == paste("Everything is OK!")) {
             toggleClass(id = "text_caution", class = "greentext")
         }
+
         tags$i(rv$output)
     })
     output$fileUploadedBool <- reactive({
@@ -658,8 +729,6 @@ function(input, output) {
     })
     outputOptions(output, 'fileUploadedBool', suspendWhenHidden = FALSE)
     
-    confMatAcc <- renderTable({ rv$confMatAcc }, digits = 5)
-    output$confMatAcc <- confMatAcc
     # pca
     observeEvent(input$clusterButton, {
         data <- rv$userTable[sapply(rv$userTable, is.numeric)]
@@ -722,6 +791,7 @@ function(input, output) {
     
     output$PCtable <- PCtable
     output$button_cluster_type <- button_cluster_type
+    output$button_classificator_type <- button_classificator_type
     output$classification_buttons <- classification_buttons
     output$cluster_buttons <- button_cluster
     output$clustTab <- clustTab
