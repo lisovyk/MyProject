@@ -15,8 +15,8 @@ function(input, output) {
     })
     
     observeEvent(input$uploaded_file, {
-        rv$user_table_init <- data.frame(user_table())
-        rv$userTable <- data.frame(user_table())
+        rv$user_table_init <- as.data.frame(user_table())
+        rv$userTable <- as.data.frame(user_table())
     })
     
     #functions
@@ -135,7 +135,6 @@ function(input, output) {
             need(length(input$cluster_alg) != 0, message = FALSE),
             errorClass = "cluster button err"
         )
-
         if(input$cluster_alg == "K-means") {
             material_card(
                 material_row(
@@ -259,19 +258,63 @@ function(input, output) {
     classification_buttons <- renderUI({
         if(!is.null(input$uploaded_file)) {
             material_card(
+                selectInput(
+                    inputId = "classType",
+                    label = "Classifier",
+                    choices = c("RandomForest", "DecisionTrees")
+                ),
                 actionButton(
-                    inputId = "confMat",
-                    label = "ConfMatrix"
+                    inputId = "calculateClassif",
+                    label = "Calculate"
+                ),
+                selectInput(
+                    inputId = "predictVal",
+                    label = "Predict value",
+                    choices = rv$AvailableColsClass
+                ),
+                sliderInput(
+                    inputId = "percentInTrain",
+                    label = "Train model %",
+                    min = 60,
+                    max = 95,
+                    value = 80
                 )
             )
         }
     })
     
+    button_classificator_type <- renderUI({
+        validate(
+            need(length(input$classType) != 0, message = FALSE),
+            errorClass = "cluster button err"
+        )
+        if(input$classType == "RandomForest") {
+            material_card(
+                numericInput(
+                    inputId = "nTree",
+                    label = "nTree",
+                    value = 300,
+                    min = 100,
+                    max = 5000,
+                    step = 50
+                ),
+                numericInput(
+                    inputId = "mtry",
+                    label = "mtry",
+                    value = 1,
+                    min = 1,
+                    max = 50
+                )
+            )
+        }
+    })
+    
+
     #buttons events
     observeEvent(c(input$button_table_convertion), {
         if(input$button_table_convertion >= 1){
             if(!input$checkbox_delete_rows){
-                rv$user_table_init <- data.frame(user_table())
+                rv$user_table_init <- as.data.frame(user_table())
             }
             rv$userTable <- as.data.frame(rv$user_table_init, stringsAsFactors = FALSE)
             if(input$checkbox_delete_rows & !is.null(input$main_user_table_rows_selected) ) {
@@ -319,9 +362,6 @@ function(input, output) {
             }
         }
     })
-    observeEvent(rv$userTable, {
-        rv$clusterTable <- data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
-    })
     observeEvent(c(input$clusterButton), {
         if(input$clusterButton >= 1 & input$cluster_alg == "K-means") {
             rv$tableCluster <- kmeans(rv$clusterTable,
@@ -330,7 +370,7 @@ function(input, output) {
                                       iter.max = input$cluster_itermax)
             rv$tableCluster$cluster <- as.factor(rv$tableCluster$cluster)
             
-            rv$clusterBar <- data.frame(1:length(rv$tableCluster$size))
+            rv$clusterBar <- as.data.frame(1:length(rv$tableCluster$size))
             for(i in 1:length(rv$tableCluster$size)) {
                 rv$clusterBar[i,2] <- rv$tableCluster$size[i]
             }
@@ -342,7 +382,7 @@ function(input, output) {
                                      nclass = input$cluster_number)
             rv$tableCluster$cluster <- as.factor(rv$tableCluster$class)
             
-            rv$clusterBar <- data.frame(1:length(rv$tableCluster$nc))
+            rv$clusterBar <- as.data.frame(1:length(rv$tableCluster$nc))
             for(i in 1:length(rv$tableCluster$nc)) {
                 rv$clusterBar[i,2] <- rv$tableCluster$nc[i]
             }
@@ -356,7 +396,46 @@ function(input, output) {
             
         }
     })
-    
+    observeEvent(c(input$calculateClassif), {
+        if(input$calculateClassif >= 1) {
+                dt <- rv$userTable
+                smp_size <- floor(as.numeric(paste0("0.", input$percentInTrain)) * nrow(dt))
+                testidx <- sample(seq_len(nrow(dt)), size = smp_size)
+                train <- dt[-testidx,]
+                test <- dt[testidx,]
+                predictVal <- input$predictVal
+
+                if(input$classType == "RandomForest"){
+                    model1 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
+                                           data=train,
+                                           nTree = input$nTree,
+                                           mtry = input$mtry)
+                    model2 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
+                                           data=test,
+                                           nTree = input$nTree,
+                                           mtry = input$mtry)
+                } 
+                # & is.factor(rv$userTable[[input$predictVal]])
+                else if(input$classType == "DecisionTrees") { # change predictVal
+                    model1 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = train)
+                    model2 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = test)
+                    rv$ctree <- model1
+                }
+                prediction1 <- predict(model1, newdata=test, type="class")
+                prediction2 <- predict(model2, newdata=train, type="class")
+                dt1 <- as.data.frame.matrix(table(prediction1, test[[predictVal]]))
+                dt2 <- as.data.frame.matrix(table(prediction2, train[[predictVal]]))
+                rv$confMat1 <- dt1
+                rv$confMat2 <- dt2
+                rv$confMatAcc1 <- postResample(prediction1, test[[predictVal]]) %>% rbind()  # accuracy 1
+                rv$confMatAcc2 <- postResample(prediction2, train[[predictVal]]) %>% rbind() # accuracy 2
+                rv$varImportance <- cbind(Colnames = rownames(varImp(model1)), Importance = varImp(model1))
+        }
+    })
+
+    observeEvent(rv$userTable, {
+        rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
+    })
     # Unavailability of button if no file uploaded
     observe({
         if (!is.null(input$clusterButton)) {
@@ -369,9 +448,10 @@ function(input, output) {
         }
     })
     #Available names and colors on dropdowns
-    observeEvent(rv$userTable, {
+    observeEvent(c(rv$userTable, rv$clusterTable), {
         rv$AvailableCols <- character(0)
         rv$AvailableColoring <- character(0)
+        rv$AvailableColsClass <- character(0)
         ColClass <- sapply(rv$userTable, class)
         for(i in 1:length(ColClass)) {
             if(ColClass[i] == "numeric" || ColClass[i] == "integer"){
@@ -380,8 +460,10 @@ function(input, output) {
             if(ColClass[i] != "character") {
                 rv$AvailableColoring <- c(rv$AvailableColoring, names(ColClass[i]))
             }
+            if(ColClass[i] == "factor"){
+                rv$AvailableColsClass <- c(rv$AvailableColsClass, names(ColClass[i]))
+            }
         }
-        
     })
     
     dataTypes <- c("integer", "numeric", "factor", "character", "logical")
@@ -528,7 +610,6 @@ function(input, output) {
                 rv$tableCluster$cluster = cutree(as.dendrogram(rv$hclust), input$hc_k)
                 clusDendro <- dendrapply(as.dendrogram(rv$hclust), colLab)
                 clusDendro %>% color_branches(k=input$hc_k, col = dendLabelColors[1:input$hc_k]) %>% plot(main = "Dendrogram",
-                                                                                                          hang = -1,
                                                                                                           ylab = paste(input$hcmetric, "distance"))
                 clusDendro %>% rect.dendrogram(k=input$hc_k, border = 8, lty = 5, lwd = 2)
                 abline(h = heights_per_k.dendrogram(clusDendro)[input$hc_k] - .1, lwd = 2, lty = 2, col = "blue")
@@ -557,33 +638,6 @@ function(input, output) {
     })
     
 
-    observeEvent(input$confMat, {
-        confusion_matrix <- DT::renderDataTable({
-            validate(
-                need(input$clusterButton >= 1 & !is.null(rv$tableCluster$cluster), message = FALSE),
-                errorClass = "cluster_barplot_err"
-            )
-            dt <- rv$userTable[sapply(rv$userTable, is.numeric)]
-            dt["Cluster"] <- as.factor(rv$tableCluster$cluster)
-            testidx <- which(1:length(dt[,1])%%5 == 0)
-            rvtrain <- dt[-testidx,]
-            rvtest <- dt[testidx,]
-            model <- randomForest(Cluster~., data=rvtrain, nTree = 50000)
-            prediction <- predict(model, newdata=rvtest, type="class")
-            dt <- as.data.frame.matrix(table(prediction, rvtest$Cluster))
-            colnames(dt) <- levels(rv$tableCluster$cluster)
-            dt <- cbind("Cluster no." = as.numeric(levels(rv$tableCluster$cluster)), dt)
-            
-            datatable(dt,
-                      rownames = FALSE,
-                      selection = list(target = 'none'),
-                      filter = "none",
-                      options = list(dom = "t"))
-            
-        })
-        output$confusion_matrix <- confusion_matrix
-    })    
-    
     # Render clust algorithms
     clustTab <- renderUI({
         validate(
@@ -604,6 +658,82 @@ function(input, output) {
         })
     })
     
+    
+    # Classification
+    confusion_matrix1 <- DT::renderDataTable({
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        datatable(rv$confMat1,
+                  rownames = FALSE,
+                  selection = list(target = 'none'),
+                  filter = "none",
+                  options = list(dom = "t"))
+    })
+    output$confusion_matrix1 <- confusion_matrix1
+    
+    confusion_matrix2 <- DT::renderDataTable({
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        datatable(rv$confMat2,
+                  rownames = FALSE,
+                  selection = list(target = 'none'),
+                  filter = "none",
+                  options = list(dom = "t"))
+    })
+    output$confusion_matrix2 <- confusion_matrix2
+    
+    confMatAcc1 <- renderTable({ 
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        rv$confMatAcc1 }, digits = 5)
+    output$confMatAcc1 <- confMatAcc1
+    
+    confMatAcc2 <- renderTable({ 
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        rv$confMatAcc2 }, digits = 5)
+    output$confMatAcc2 <- confMatAcc2
+    
+    varImportance <- renderTable({
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        rv$varImportance 
+    })
+    output$varImportance <- varImportance
+    
+    cuttree <- renderPlot({
+        validate(
+            need(input$classType == "DecisionTrees" & input$calculateClassif >= 1, message = FALSE),
+            errorClass = "plotly_err"
+        )
+        fancyRpartPlot(rv$ctree, main = "Train model plot")
+    })
+    output$cuttree <- cuttree
+    
+
+    # if "' in colnames
+    observeEvent(rv$userTable, {
+        rv$SpecChar <- FALSE
+        for(i in names(rv$userTable)) {
+            a <- strsplit(i,"")
+            for(j in a[[1]]){
+                if(j == "\"" | j == "\'" | j == " "){
+                    rv$SpecChar <- TRUE
+                    break()
+                }
+            }
+        }
+    })
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -613,9 +743,14 @@ function(input, output) {
             rv$output <- paste("Careful! You have NA values in dataset.")
             toggleClass(id = "text_caution", class = "redtext")
         }
+        if(rv$SpecChar == TRUE){
+            rv$output <- paste("You have special characters or spaces in colnames, it might cause problems.")
+            toggleClass(id = "text_caution", class = "redtext")
+        }
         if(rv$output == paste("Everything is OK!")) {
             toggleClass(id = "text_caution", class = "greentext")
         }
+
         tags$i(rv$output)
     })
     output$fileUploadedBool <- reactive({
@@ -682,8 +817,10 @@ function(input, output) {
         )
         
     })
+    
     output$PCtable <- PCtable
     output$button_cluster_type <- button_cluster_type
+    output$button_classificator_type <- button_classificator_type
     output$classification_buttons <- classification_buttons
     output$cluster_buttons <- button_cluster
     output$clustTab <- clustTab

@@ -72,7 +72,8 @@ material_page(
         ),
         conditionalPanel(
             condition = "$('a.active').attr('href') == '#classification_tab'",
-            uiOutput("classification_buttons")
+            uiOutput("classification_buttons"),
+            uiOutput("button_classificator_type")
         )
     ),
     material_tabs(
@@ -110,7 +111,14 @@ material_page(
     ),
     material_tab_content(
         tab_id = "classification_tab",
-        h5("Confusion matrix"),
-        DT::dataTableOutput("confusion_matrix")
+        h5("Train set predicions"),
+        DT::dataTableOutput("confusion_matrix1"),
+        tableOutput("confMatAcc1"),
+        h5("Test set predictions"),
+        DT::dataTableOutput("confusion_matrix2"),
+        tableOutput("confMatAcc2"),
+        h5("Variance Importance"),
+        tableOutput("varImportance"),
+        plotOutput("cuttree")
     )
 )
