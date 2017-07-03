@@ -21,5 +21,6 @@ library(randomForest)
 library(rpart)
 library(RColorBrewer)
 library(rattle)
+library(e1071)
 
 library(datasets)

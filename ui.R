@@ -111,8 +111,7 @@ material_page(
     ),
     material_tab_content(
         tab_id = "classification_tab",
-        DT::dataTableOutput("confusion_matrix"),
-        tableOutput("confMatAcc"),
-        plotOutput("cuttree")
+        uiOutput("renderDecTree"),
+        uiOutput("renderRF")
     )
 )
