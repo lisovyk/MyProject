@@ -639,7 +639,6 @@ function(input, output) {
     })
     
 
-    
     # Render clust algorithms
     clustTab <- renderUI({
         validate(
@@ -694,12 +693,12 @@ function(input, output) {
     
     # if "' in colnames
     observeEvent(rv$userTable, {
-        rv$quotesBool <- FALSE
+        rv$SpecChar <- FALSE
         for(i in names(rv$userTable)) {
             a <- strsplit(i,"")
             for(j in a[[1]]){
                 if(j == "\"" | j == "\'" | j == " "){
-                    rv$quotesBool <- TRUE
+                    rv$SpecChar <- TRUE
                     break()
                 }
             }
@@ -714,7 +713,7 @@ function(input, output) {
             rv$output <- paste("Careful! You have NA values in dataset.")
             toggleClass(id = "text_caution", class = "redtext")
         }
-        if(rv$quotesBool == TRUE){
+        if(rv$SpecChar == TRUE){
             rv$output <- paste("You have special characters or spaces in colnames, it might cause problems.")
             toggleClass(id = "text_caution", class = "redtext")
         }
