@@ -2,18 +2,18 @@
 done: 
 пробіли в colnames <- видає warning
 library(tree) for decision trees   - rpart + fancyRpartPlot
-
-to do:
 test and train of confusion matrix //todo: add overall accuracy
-
-
-caret - variables important
+caret - variables importance
 add confusion matrix for RF train/test; decision tree
-
 вибір класифікатор (рфорест(mtry+ntree), десіжн трі*)
 
-? static table on tab 3
+to do:
+
 getting and cleaning data
+
+
+? static table on tab 3
+
 
 4 tab - classification
 
