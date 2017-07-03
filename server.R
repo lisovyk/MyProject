@@ -261,22 +261,11 @@ function(input, output) {
                 selectInput(
                     inputId = "classType",
                     label = "Classifier",
-                    choices = c("RandomForest", "Decision Trees")
-                )
-            )
-        }
-    })
-    
-    button_classificator_type <- renderUI({
-        validate(
-            need(length(input$classType) != 0, message = FALSE),
-            errorClass = "cluster button err"
-        )
-        if(input$classType == "RandomForest") {
-            material_card(
+                    choices = c("RandomForest", "DecisionTrees")
+                ),
                 actionButton(
-                    inputId = "confMat",
-                    label = "ConfMatrix"
+                    inputId = "calculateClassif",
+                    label = "Calculate"
                 ),
                 selectInput(
                     inputId = "predictVal",
@@ -289,7 +278,18 @@ function(input, output) {
                     min = 60,
                     max = 95,
                     value = 80
-                ),
+                )
+            )
+        }
+    })
+    
+    button_classificator_type <- renderUI({
+        validate(
+            need(length(input$classType) != 0, message = FALSE),
+            errorClass = "cluster button err"
+        )
+        if(input$classType == "RandomForest") {
+            material_card(
                 numericInput(
                     inputId = "nTree",
                     label = "nTree",
@@ -304,20 +304,6 @@ function(input, output) {
                     value = 1,
                     min = 1,
                     max = 50
-                )
-                
-            )
-        } 
-        else if(input$classType == "Decision Trees") {
-            material_card(
-                actionButton(
-                    inputId = "decTree",
-                    label = "DecisionTrees"
-                ),
-                selectInput(
-                    inputId = "predictVal",
-                    label = "Predict value",
-                    choices = rv$AvailableColsClass
                 )
             )
         }
@@ -410,39 +396,43 @@ function(input, output) {
             
         }
     })
-    observeEvent(c(input$confMat), {
-        if(input$confMat >=1) {
+    observeEvent(c(input$calculateClassif), {
+        if(input$calculateClassif >= 1) {
                 dt <- rv$userTable
                 smp_size <- floor(as.numeric(paste0("0.", input$percentInTrain)) * nrow(dt))
                 testidx <- sample(seq_len(nrow(dt)), size = smp_size)
                 train <- dt[-testidx,]
                 test <- dt[testidx,]
                 predictVal <- input$predictVal
-                
-                model <- randomForest(as.formula(paste0(input$predictVal, " ~ .")),
-                                      data=train,
-                                      nTree = input$nTree,
-                                      mtry = input$mtry)
-                prediction1 <- predict(model, newdata=test, type="class")
-                dt1 <- as.data.frame.matrix(table(prediction1, test[[predictVal]]))
-                rv$confMat1 <- dt1
-                rv$confMatAcc1 <- postResample(prediction1, test[[predictVal]]) %>% rbind()  # accuracy
-                rv$varImportance <- cbind(Colnames = rownames(varImp(model)), Importance = varImp(model))
-                model2 <- randomForest(as.formula(paste0(input$predictVal, " ~ .")),
-                                      data=test,
-                                      nTree = input$nTree,
-                                      mtry = input$mtry)
+
+                if(input$classType == "RandomForest"){
+                    model1 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
+                                           data=train,
+                                           nTree = input$nTree,
+                                           mtry = input$mtry)
+                    model2 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
+                                           data=test,
+                                           nTree = input$nTree,
+                                           mtry = input$mtry)
+                } 
+                # & is.factor(rv$userTable[[input$predictVal]])
+                else if(input$classType == "DecisionTrees") { # change predictVal
+                    model1 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = train)
+                    model2 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = test)
+                    rv$ctree <- model1
+                }
+                prediction1 <- predict(model1, newdata=test, type="class")
                 prediction2 <- predict(model2, newdata=train, type="class")
+                dt1 <- as.data.frame.matrix(table(prediction1, test[[predictVal]]))
                 dt2 <- as.data.frame.matrix(table(prediction2, train[[predictVal]]))
+                rv$confMat1 <- dt1
                 rv$confMat2 <- dt2
-                rv$confMatAcc2 <- postResample(prediction2, train[[predictVal]]) %>% rbind() #accuracy2
+                rv$confMatAcc1 <- postResample(prediction1, test[[predictVal]]) %>% rbind()  # accuracy 1
+                rv$confMatAcc2 <- postResample(prediction2, train[[predictVal]]) %>% rbind() # accuracy 2
+                rv$varImportance <- cbind(Colnames = rownames(varImp(model1)), Importance = varImp(model1))
         }
     })
-    observeEvent(c(input$decTree), {
-        if(is.factor(rv$userTable[[input$predictVal]])) {
-            rv$ctree <- rpart(as.formula(paste0(input$predictVal, " ~ .")), data = rv$userTable)
-        }
-    })
+
     observeEvent(rv$userTable, {
         rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
@@ -672,7 +662,7 @@ function(input, output) {
     # Classification
     confusion_matrix1 <- DT::renderDataTable({
         validate(
-            need(input$classType == "RandomForest", message = FALSE),
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
             errorClass = "plotly_err"
         )
         datatable(rv$confMat1,
@@ -685,7 +675,7 @@ function(input, output) {
     
     confusion_matrix2 <- DT::renderDataTable({
         validate(
-            need(input$classType == "RandomForest", message = FALSE),
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
             errorClass = "plotly_err"
         )
         datatable(rv$confMat2,
@@ -698,63 +688,39 @@ function(input, output) {
     
     confMatAcc1 <- renderTable({ 
         validate(
-            need(input$classType == "RandomForest", message = FALSE),
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
             errorClass = "plotly_err"
         )
         rv$confMatAcc1 }, digits = 5)
     output$confMatAcc1 <- confMatAcc1
     
+    confMatAcc2 <- renderTable({ 
+        validate(
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
+            errorClass = "plotly_err"
+        )
+        rv$confMatAcc2 }, digits = 5)
+    output$confMatAcc2 <- confMatAcc2
+    
     varImportance <- renderTable({
         validate(
-            need(input$classType == "RandomForest", message = FALSE),
+            need(input$classType == "RandomForest" | input$classType == "DecisionTrees", message = FALSE),
             errorClass = "plotly_err"
         )
         rv$varImportance 
     })
     output$varImportance <- varImportance
     
-    confMatAcc2 <- renderTable({ 
-        validate(
-            need(input$classType == "RandomForest", message = FALSE),
-            errorClass = "plotly_err"
-        )
-        rv$confMatAcc2 }, digits = 5)
-    output$confMatAcc2 <- confMatAcc2
-    
     cuttree <- renderPlot({
         validate(
-            need(input$classType == "Decision Trees" & input$decTree >= 1, message = FALSE),
+            need(input$classType == "DecisionTrees" & input$calculateClassif >= 1, message = FALSE),
             errorClass = "plotly_err"
         )
-        fancyRpartPlot(rv$ctree)
+        fancyRpartPlot(rv$ctree, main = "Train model plot")
     })
     output$cuttree <- cuttree
     
-    #Classification renderUI
-    output$renderDecTree <- renderUI({
-        validate(
-            need(input$classType == "Decision Trees", message = FALSE),
-            errorClass = "err"
-        )
-        plotOutput("cuttree")
-    })
-    output$renderRF <- renderUI({
-        validate(
-            need(input$classType == "RandomForest", message = FALSE),
-            errorClass = "err"
-        )
-        material_card(
-            h5("Train set predicions"),
-            DT::dataTableOutput("confusion_matrix1"),
-            tableOutput("confMatAcc1"),
-            h5("Test set predictions"),
-            DT::dataTableOutput("confusion_matrix2"),
-            tableOutput("confMatAcc2"),
-            h5("Variance Importance"),
-            tableOutput("varImportance")
-        )
-    })
-    
+
     # if "' in colnames
     observeEvent(rv$userTable, {
         rv$SpecChar <- FALSE
