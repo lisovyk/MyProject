@@ -18,5 +18,8 @@ library(shinymaterial)
 library(shinyjs)
 library(rhandsontable)
 library(randomForest)
+library(rpart)
+library(RColorBrewer)
+library(rattle)
 
 library(datasets)

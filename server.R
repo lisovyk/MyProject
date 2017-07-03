@@ -418,7 +418,7 @@ function(input, output) {
                 train <- dt[-testidx,]
                 test <- dt[testidx,]
                 
-                predictVal <- paste0("`", input$predictVal, "`")
+                predictVal <- input$predictVal
                 model <- randomForest(as.formula(paste0(input$predictVal, " ~ .")),
                                       data=train,
                                       nTree = input$nTree,
@@ -431,7 +431,7 @@ function(input, output) {
     })
     observeEvent(c(input$decTree), {
         if(is.factor(rv$userTable[[input$predictVal]])) {
-            rv$ctree <- ctree(as.formula(paste0(input$predictVal, " ~ .")), data = rv$userTable)
+            rv$ctree <- rpart(as.formula(paste0(input$predictVal, " ~ .")), data = rv$userTable)
         }
     })
     observeEvent(rv$userTable, {
@@ -687,24 +687,24 @@ function(input, output) {
             need(input$classType == "Decision Trees" & input$decTree >= 1, message = FALSE),
             errorClass = "plotly_err"
         )
-        plot(rv$ctree)
+        fancyRpartPlot(rv$ctree)
     })
     output$cuttree <- cuttree
     
     
     # if "' in colnames
     observeEvent(rv$userTable, {
+        rv$quotesBool <- FALSE
         for(i in names(rv$userTable)) {
             a <- strsplit(i,"")
             for(j in a[[1]]){
-                if(j == "\"" | j == "\'"){
+                if(j == "\"" | j == "\'" | j == " "){
                     rv$quotesBool <- TRUE
                     break()
                 }
             }
         }
     })
-    rv$quotesBool <- FALSE
     output$text_caution <- renderUI({
         removeClass(id = "text_caution", class = "greentext")
         removeClass(id = "text_caution", class = "redtext")
@@ -715,7 +715,7 @@ function(input, output) {
             toggleClass(id = "text_caution", class = "redtext")
         }
         if(rv$quotesBool == TRUE){
-            rv$output <- paste("You have quotes in colnames, it will cause problems.")
+            rv$output <- paste("You have special characters or spaces in colnames, it might cause problems.")
             toggleClass(id = "text_caution", class = "redtext")
         }
         if(rv$output == paste("Everything is OK!")) {

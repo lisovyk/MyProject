@@ -1,60 +1,29 @@
-﻿test and train of confusion matrix //todo: add overall accuracy
-
+﻿
 done: 
-fixed "X.colname" in main data table (data.frame to as.data.frame)
-вибір змінної на прогноз
-вибір %змінних на трейн/тест
-accuracy test/train(?) 
-
-
-leave-one-out cross-validation; k-fold valid
-bootstraping
-machine learning
-After: linear regression
-
-linear model selection and regularization
-
-
+пробіли в colnames <- видає warning
+library(tree) for decision trees   - rpart + fancyRpartPlot
 
 to do:
-library(tree) for decision trees
-пробіли в colnames == error? видаляти special char.
-caret - variables important
-add conf matrix for RF train/test; decision tree
+test and train of confusion matrix //todo: add overall accuracy
 
+
+caret - variables important
+add confusion matrix for RF train/test; decision tree
 
 вибір класифікатор (рфорест(mtry+ntree), десіжн трі*)
 
-
-
-logist. regression *
-mtry in randomForest for user input
-accuracy
-
-?  static table on tab 3
+? static table on tab 3
 getting and cleaning data
 
 4 tab - classification
-
-логістична регресія, decision tree, random forest (rpart, randomForest and lda) Gradiant boosting > RF ? 
-тюнинг моделі
-точність моделі
-support vector machine
-
 
 lib caret cross-validation train()
 Within cluster sum of squares by total руками порахувати
 
 
-
-
 questions:
-googleVis https://cran.r-project.org/web/packages/googleVis/vignettes/googleVis_examples.html
-
 
 lm() quadratic coefficients
-uploaded_file "|| input.uploaded_file == undefined" not working
-Classes ‘data.table’ and 'data.frame' can't cluster without 'Apply' on 1 tab
 how to save values after changing the insides (e.g 2 tab input boxes)
 
 bootstrapLib() for shinyBS
