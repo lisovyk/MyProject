@@ -112,11 +112,11 @@ material_page(
     material_tab_content(
         tab_id = "classification_tab",
         h5("Train set predicions"),
-        DT::dataTableOutput("confusion_matrix1"),
-        tableOutput("confMatAcc1"),
-        h5("Test set predictions"),
         DT::dataTableOutput("confusion_matrix2"),
         tableOutput("confMatAcc2"),
+        h5("Test set predictions"),
+        DT::dataTableOutput("confusion_matrix1"),
+        tableOutput("confMatAcc1"),
         h5("Variance Importance"),
         tableOutput("varImportance"),
         plotOutput("cuttree")

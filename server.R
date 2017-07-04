@@ -263,9 +263,12 @@ function(input, output) {
                     label = "Classifier",
                     choices = c("RandomForest", "DecisionTrees")
                 ),
-                actionButton(
-                    inputId = "calculateClassif",
-                    label = "Calculate"
+                tags$div(
+                    title = 'In order to classify, you must have at least one column of class "factor"',
+                    actionButton(
+                        inputId = "calculateClassif",
+                        label = "Calculate"
+                    )
                 ),
                 selectInput(
                     inputId = "predictVal",
@@ -404,46 +407,52 @@ function(input, output) {
                 train <- dt[-testidx,]
                 test <- dt[testidx,]
                 predictVal <- input$predictVal
-
+                train <- droplevels(train)
+                test <- droplevels(test)
                 if(input$classType == "RandomForest"){
-                    model1 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
+                    model <- randomForest(as.formula(paste0(predictVal, " ~ .")),
                                            data=train,
                                            nTree = input$nTree,
                                            mtry = input$mtry)
-                    model2 <- randomForest(as.formula(paste0(predictVal, " ~ .")),
-                                           data=test,
-                                           nTree = input$nTree,
-                                           mtry = input$mtry)
-                } 
-                # & is.factor(rv$userTable[[input$predictVal]])
-                else if(input$classType == "DecisionTrees") { # change predictVal
-                    model1 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = train)
-                    model2 <- rpart(as.formula(paste0(predictVal, " ~ .")), data = test)
-                    rv$ctree <- model1
                 }
-                prediction1 <- predict(model1, newdata=test, type="class")
-                prediction2 <- predict(model2, newdata=train, type="class")
+                else if(input$classType == "DecisionTrees") {
+                    model <- rpart(as.formula(paste0(predictVal, " ~ .")), data = train)
+                    rv$ctree <- model
+                }
+                levels(train[[predictVal]]) <- levels(dt[[predictVal]])
+                levels(test[[predictVal]]) <- levels(dt[[predictVal]])
+                prediction1 <- predict(model, newdata=test, type="class")
+                print(class(prediction1))
+                prediction2 <- predict(model, newdata=train, type="class")
                 dt1 <- as.data.frame.matrix(table(prediction1, test[[predictVal]]))
                 dt2 <- as.data.frame.matrix(table(prediction2, train[[predictVal]]))
                 rv$confMat1 <- dt1
                 rv$confMat2 <- dt2
                 rv$confMatAcc1 <- postResample(prediction1, test[[predictVal]]) %>% rbind()  # accuracy 1
                 rv$confMatAcc2 <- postResample(prediction2, train[[predictVal]]) %>% rbind() # accuracy 2
-                rv$varImportance <- cbind(Colnames = rownames(varImp(model1)), Importance = varImp(model1))
+                rv$varImportance <- cbind(Colnames = rownames(varImp(model)), Importance = varImp(model))
         }
     })
 
     observeEvent(rv$userTable, {
         rv$clusterTable <- as.data.frame(rv$userTable[complete.cases(rv$userTable),])[sapply(rv$userTable, is.numeric)]
     })
-    # Unavailability of button if no file uploaded
+    # Unavailability of buttons
     observe({
+
         if (!is.null(input$clusterButton)) {
             # or if ("clusterButton" %in% names(input))
             disable("clusterButton")
             observeEvent(rv$userTable, {
-                rv$anyNAs <- any(sapply(rv$userTable, function(y) sum(is.na(y))))
-                toggleState(id = "clusterButton", condition = !rv$anyNAs)
+                rv$anyNAs <- !any(sapply(rv$userTable, function(y) sum(is.na(y))))
+                toggleState(id = "clusterButton", condition = rv$anyNAs)
+            })
+        }
+        if ("calculateClassif" %in% names(input)) {
+            disable("calculateClassif")
+            observeEvent(rv$userTable,{
+                cond <- any(sapply(rv$userTable, function(y) { is.factor(y) }))
+                toggleState(id = "calculateClassif", condition = cond)
             })
         }
     })
@@ -716,7 +725,7 @@ function(input, output) {
             need(input$classType == "DecisionTrees" & input$calculateClassif >= 1, message = FALSE),
             errorClass = "plotly_err"
         )
-        fancyRpartPlot(rv$ctree, main = "Train model plot")
+        fancyRpartPlot(rv$ctree, main = "Train model plot", sub = "")
     })
     output$cuttree <- cuttree
     
